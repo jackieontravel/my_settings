@@ -2,24 +2,38 @@
 
 # Source global definitions
 if [ -f /etc/bashrc ]; then
-     . /etc/bashrc
+	. /etc/bashrc
 fi
 
 # User specific aliases and functions
 
 export PS1="\[\e[33;1m\][\! \D{%m/%d %T} \u@\H \w]\n$ \[\e[0m\]"
 
+########################################################################
 ### Common settings for fs() and ff()
+########################################################################
 NPROC=`nproc`       # default to use all Processors, change it to a lower value if it makes heavy load
 DISK_LETTER="W:"    # change for different drive
 
-### Common settings for fs() and ff(): special settings for Mock.
+### Special settings for Mock. Ignored in normal server
 SDK_VER=sdk2_13.1   # change version if necessary
 MOCK_CFG="fedora-17-x86_64"
 MOCK_PREFIX="$MOCK_CFG-jackieyeh_$SDK_VER"
-DISK_ROOT=/$MOCK_PREFIX/root$HOME    #Normal: 'DISK_ROOT='. Mock: 'DISK_ROOT=/$MOCK_PREFIX/root$HOME'
+### END -- Special settings for Mock. Ignored in normal server
+
+DISK_ROOT=/$MOCK_PREFIX/root    #Normal: 'DISK_ROOT='. Mock: 'DISK_ROOT=/$MOCK_PREFIX/root'
 WINDOWS_PROGRAM=""        #UltraEdit: 'WINDOWS_PROGRAM=' Notepad++: 'WINDOWS_PROGRAM="notepad++\ "' (Keep the trailing space and its previous escape (\) )
 LN_NUM_FORMAT="/"                   #Line number format. UltraEdit: 'LN_NUM_FORMAT="/"', Notepad++: 'LN_NUM_FORMAT=" -n"' (Keep the leading space)
+
+### POST process, don't change it!
+if [ "$DISK_ROOT" == "" ] ; then
+    D_HOME=
+else
+    D_HOME=$HOME
+fi      
+########################################################################
+### END -- Common settings for fs() and ff()
+########################################################################
 
 
 
@@ -95,17 +109,14 @@ echo -e "     fsds(): find <structure definition> in *.c or *.cpp or *.h"
 
 
 ######
-## Special fs() version for MOCK
-##      - Add "$DISK_LETTER/$MOCK_PREFIX/root/" before current pwd
-## As compared to standard version:
-##      - Replace $HOME as $DISK_LETTER
+## fs() using AWK, can support standard server & mock server. for Windows application: UltraEdit & notepad++ are suported
 ######
 fs()
 {
     LINE_OUTPUT_FORMAT="\e[90m"   # Set to GRAY, see http://misc.flogisoft.com/bash/tip_colors_and_formatting for color details
     LINE_OUTPUT_NORMAL="\e[0m"    # Restore to default
     CMD_FILE=$HOME/.fs_cmd_file
-   
+    
     # Save current GREP_COLORS. see grep man page: http://linux.die.net/man/1/grep
     cur_grep_color=$GREP_COLORS
     # set GREP_COLORS: unset the colors of fn (filename), ln (line #), and se (separators) -- so that we can control the line output format by LINE_OUTPUT_FORMAT
@@ -116,13 +127,13 @@ fs()
     if [ "$#" -gt "1" ] ; then
         shift
         option=$*
-    fi     
+    fi      
     echo -e "time find -type d \( -name '\.svn' -o -name 'AppLibs' -o -path './BSEAV/bin' \) -prune -o -type f -print0 | xargs -0 -P$NPROC grep -n -I --exclude='$CMD_FILE' --exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --exclude='ctags.tmp' --color=always $option '$pattern' \
-    | awk -F':' -v prog=\"$WINDOWS_PROGRAM\" -v disk=$DISK_LETTER -v root_path=\`pwd| sed 's;'\$HOME';'\$DISK_ROOT';'\` -v prefix=$MOCK_PREFIX -v fmt=$LINE_OUTPUT_FORMAT -v fmt_normal=$LINE_OUTPUT_NORMAL -v lnfmt=\"$LN_NUM_FORMAT\" -v last_path="" '
+    | awk -F':' -v prog=\"$WINDOWS_PROGRAM\" -v disk=$DISK_LETTER -v root_path=\`pwd | sed 's;'\$HOME';'\$D_HOME';' | sed 's;'^';'\$DISK_ROOT';'\` -v fmt=$LINE_OUTPUT_FORMAT -v fmt_normal=$LINE_OUTPUT_NORMAL -v lnfmt=\"$LN_NUM_FORMAT\" -v last_path="" '
         BEGIN {}
         {
             path=root_path\"/\"\$1;
-            if ( path != last_path )
+            if ( path != last_path ) 
             {
                 file_count++;
                 last_path = path;
@@ -137,9 +148,9 @@ fs()
     echo -e "( \"Regular expression\" style wildcard. Ex: fs 'in.*de' to find 'inde', 'include', 'inc abde',... )\n\n"
 
     source $CMD_FILE
-     #rm -rf .fs_cmd_file  #keep it to run again!
-    
-     # restor GREP_COLORS
+	#rm -rf .fs_cmd_file  #keep it to run again!
+	
+	# restor GREP_COLORS
     export GREP_COLORS=$cur_grep_color
 }
 
@@ -164,13 +175,13 @@ ff()
 {
     # check if $1 contains line number
     echo $1| grep ":" > /dev/null
-     if [ "$?" == 0 ] ; then
-         filename=`echo "$1" | cut -d ':' -f 1`
+	if [ "$?" == 0 ] ; then
+	    filename=`echo "$1" | cut -d ':' -f 1`
         linenum=`echo $1 | cut -d ':' -f 2`
-        cmd="time find . -name '\.svn' -prune -o -name \"$filename\" -exec printf \"%s$%s \n\" {} \$linenum \;  | sed 's;./;'`pwd`'/;'  | sed 's;'"$HOME"';'"$WINDOWS_PROGRAM$DISK_LETTER$DISK_ROOT"';' | sed 's;/;\\\\;g' | sed 's;\\$;/;g'"
+        cmd="time find . -name '\.svn' -prune -o -name \"$filename\" -exec printf \"%s$%s \n\" {} \$linenum \;  | sed 's;./;'`pwd`'/;' | sed 's;'"$HOME"';'"$D_HOME"';' | sed 's;'^';'"$WINDOWS_PROGRAM$DISK_LETTER$DISK_ROOT"';' | sed 's;/;\\\\;g' | sed 's;\\$;/;g'"
     else
-        cmd="time find . -name '\.svn' -prune -o -name "$1" -print | sed 's;./;'`pwd`'/;'  | sed 's;'"$HOME"';'"$WINDOWS_PROGRAM$DISK_LETTER$DISK_ROOT"';' | sed 's;/;\\\\;g' | sed 's;\\$;/;g'"
-     fi
+        cmd="time find . -name '\.svn' -prune -o -name "$1" -print | sed 's;./;'`pwd`'/;' | sed 's;'"$HOME"';'"$D_HOME"';' | sed 's;'^';'"$WINDOWS_PROGRAM$DISK_LETTER$DISK_ROOT"';' | sed 's;/;\\\\;g' | sed 's;\\$;/;g'"
+	fi
     echo "$cmd"
     echo -e "(Either way for wildcard search: \"ff \*.c\" or \"ff '*.c'\" )\n\n"
     eval $cmd
@@ -184,3 +195,4 @@ ffll()
     echo -e "( \"shell style\" wildcard. Ex: ffll '*fs*' )\n"
     eval $cmd
 }
+

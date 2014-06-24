@@ -9,18 +9,31 @@ if [ -f /etc/bashrc ]; then
 	. /etc/bashrc
 fi
 
+########################################################################
 ### Common settings for fs() and ff()
+########################################################################
 NPROC=`nproc`       # default to use all Processors, change it to a lower value if it makes heavy load
 DISK_LETTER="U:"    # change for different drive
 
-### Common settings for fs() and ff(): special settings for Mock.
+### Special settings for Mock. Ignored in normal server
 SDK_VER=sdk2_13.1   # change version if necessary
 MOCK_CFG="fedora-17-x86_64"
 MOCK_PREFIX="$MOCK_CFG-jackieyeh_$SDK_VER"
-DISK_ROOT=    #Normal: 'DISK_ROOT='. Mock: 'DISK_ROOT=/$MOCK_PREFIX/root$HOME'
-WINDOWS_PROGRAM=        #UltraEdit: 'WINDOWS_PROGRAM=' Notepad++: 'WINDOWS_PROGRAM="notepad++\ "' (Keep the trailing space)
-LN_NUM_FORMAT="/"                   #Line number format. UltraEdit: 'LN_NUM_FORMAT="/"', Notepad++: 'LN_NUM_FORMAT=" -n"' (Keep the leading space)
+### END -- Special settings for Mock. Ignored in normal server
 
+DISK_ROOT=              #Normal: 'DISK_ROOT='. Mock: 'DISK_ROOT=/$MOCK_PREFIX/root'
+WINDOWS_PROGRAM=""      #UltraEdit: 'WINDOWS_PROGRAM=' Notepad++: 'WINDOWS_PROGRAM="notepad++\ "' (Keep the trailing space and its previous escape (\) )
+LN_NUM_FORMAT="/"       #Line number format. UltraEdit: 'LN_NUM_FORMAT="/"', Notepad++: 'LN_NUM_FORMAT=" -n"' (Keep the leading space)
+
+### POST process, don't change it!
+if [ "$DISK_ROOT" == "" ] ; then
+    D_HOME=
+else
+    D_HOME=$HOME
+fi      
+########################################################################
+### END -- Common settings for fs() and ff()
+########################################################################
 # User specific aliases and functions
 
 # set prompt to green color
@@ -118,9 +131,9 @@ ff()
 	if [ "$?" == 0 ] ; then
 	    filename=`echo "$1" | cut -d ':' -f 1`
         linenum=`echo $1 | cut -d ':' -f 2`
-        cmd="time find . -name '\.svn' -prune -o -name \"$filename\" -exec printf \"%s$%s \n\" {} \$linenum \;  | sed 's;./;'`pwd`'/;'  | sed 's;'"$HOME"';'"$WINDOWS_PROGRAM$DISK_LETTER$DISK_ROOT"';' | sed 's;/;\\\\;g' | sed 's;\\$;/;g'"
+        cmd="time find . -name '\.svn' -prune -o -name \"$filename\" -exec printf \"%s$%s \n\" {} \$linenum \;  | sed 's;./;'`pwd`'/;' | sed 's;'"$HOME"';'"$D_HOME"';' | sed 's;'^';'"$WINDOWS_PROGRAM$DISK_LETTER$DISK_ROOT"';' | sed 's;/;\\\\;g' | sed 's;\\$;/;g'"
     else
-        cmd="time find . -name '\.svn' -prune -o -name "$1" -print | sed 's;./;'`pwd`'/;'  | sed 's;'"$HOME"';'"$WINDOWS_PROGRAM$DISK_LETTER$DISK_ROOT"';' | sed 's;/;\\\\;g' | sed 's;\\$;/;g'"
+        cmd="time find . -name '\.svn' -prune -o -name "$1" -print | sed 's;./;'`pwd`'/;' | sed 's;'"$HOME"';'"$D_HOME"';' | sed 's;'^';'"$WINDOWS_PROGRAM$DISK_LETTER$DISK_ROOT"';' | sed 's;/;\\\\;g' | sed 's;\\$;/;g'"
 	fi
     echo "$cmd"
     echo -e "(Either way for wildcard search: \"ff \*.c\" or \"ff '*.c'\" )\n\n"
@@ -250,6 +263,9 @@ echo -e "     fsds(): find <structure definition> in *.c or *.cpp or *.h"
 #    time find -type d \( -name '\.svn' -o -name 'AppLibs' -o -path './BSEAV/bin' \) -prune -o -type f -print0 | xargs -0 -P4 grep -n -I --exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --color=always $option "$pattern"  | convertpath
 #}
 
+######
+## fs() using AWK, can support standard server & mock server. for Windows application: UltraEdit & notepad++ are suported
+######
 fs()
 {
     LINE_OUTPUT_FORMAT="\e[90m"   # Set to GRAY, see http://misc.flogisoft.com/bash/tip_colors_and_formatting for color details
@@ -268,7 +284,7 @@ fs()
         option=$*
     fi      
     echo -e "time find -type d \( -name '\.svn' -o -name 'AppLibs' -o -path './BSEAV/bin' \) -prune -o -type f -print0 | xargs -0 -P$NPROC grep -n -I --exclude='$CMD_FILE' --exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --exclude='ctags.tmp' --color=always $option '$pattern' \
-    | awk -F':' -v prog=\"$WINDOWS_PROGRAM\" -v disk=$DISK_LETTER -v root_path=\`pwd| sed 's;'\$HOME';'\$DISK_ROOT';'\` -v prefix=$MOCK_PREFIX -v fmt=$LINE_OUTPUT_FORMAT -v fmt_normal=$LINE_OUTPUT_NORMAL -v lnfmt=\"$LN_NUM_FORMAT\" -v last_path="" '
+    | awk -F':' -v prog=\"$WINDOWS_PROGRAM\" -v disk=$DISK_LETTER -v root_path=\`pwd | sed 's;'\$HOME';'\$D_HOME';' | sed 's;'^';'\$DISK_ROOT';'\` -v fmt=$LINE_OUTPUT_FORMAT -v fmt_normal=$LINE_OUTPUT_NORMAL -v lnfmt=\"$LN_NUM_FORMAT\" -v last_path="" '
         BEGIN {}
         {
             path=root_path\"/\"\$1;
@@ -292,6 +308,7 @@ fs()
 	# restor GREP_COLORS
     export GREP_COLORS=$cur_grep_color
 }
+
 
 
 # special version of fs(): find in current directory, no recursion
