@@ -1,0 +1,405 @@
+# .bashrc
+##############################################
+# History
+# 2014/6/3     - Derived from Leopard (172.21.8.173)
+##############################################
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+	. /etc/bashrc
+fi
+
+### Common settings for fs() and ff()
+NPROC=`nproc`       # default to use all Processors, change it to a lower value if it makes heavy load
+DISK_LETTER="U:"    # change for different drive
+
+### Common settings for fs() and ff(): special settings for Mock.
+SDK_VER=sdk2_13.1   # change version if necessary
+MOCK_CFG="fedora-17-x86_64"
+MOCK_PREFIX="$MOCK_CFG-jackieyeh_$SDK_VER"
+DISK_ROOT=    #Normal: 'DISK_ROOT='. Mock: 'DISK_ROOT=/$MOCK_PREFIX/root$HOME'
+WINDOWS_PROGRAM=        #UltraEdit: 'WINDOWS_PROGRAM=' Notepad++: 'WINDOWS_PROGRAM="notepad++\ "' (Keep the trailing space)
+LN_NUM_FORMAT="/"                   #Line number format. UltraEdit: 'LN_NUM_FORMAT="/"', Notepad++: 'LN_NUM_FORMAT=" -n"' (Keep the leading space)
+
+# User specific aliases and functions
+
+# set prompt to green color
+#export PS1="\[\e[32;1m\][\u@\H \W]\$ \[\e[0m\]" 
+## with full pwd
+export PS1="\[\e[34;1m\][\! \D{%m/%d %T} \u@\H \w]\n\$ \[\e[0m\]" 
+
+#set history time format
+export HISTTIMEFORMAT='%m/%d %T '
+
+alias h='history 15'
+alias hh='history $2'
+alias lm='ls -l --color=tty $* |more'
+alias la='ls -al --color=tty $*'
+alias md='mkdir'
+### Auto update NTP time. Other NTP servers in Taiwan:    
+#    * tock.stdtime.gov.tw
+#    * time.stdtime.gov.tw
+#    * clock.stdtime.gov.tw
+#    * tick.stdtime.gov.tw 
+#################################################################################
+alias ntpupdate='srv="tw.pool.ntp.org"; echo "sudo ntpdate $srv"; sudo ntpdate $srv'
+# command to check md5 checksum for software release
+alias chkmd5='cd ~ && cat a.txt | sed 's/^checksum:.*//g'  | tr -d "\r\n\t: " |  md5sum  | head -c 8'
+
+# common alias to goto specific directories:
+#goto xtremebrowser
+alias gotoxtreme='cd AppLibs/opensource/qt/broadcom/qt-4.8.1/examples/webkit/xtremebrowser/'
+alias mog='killall mongoose; sleep 1; mongoose ~/.mongoose.cfg & echo -e "\n\nURL:\nhttp://172.21.8.173:8025/\n"; sleep 1; echo'
+
+
+## Shell function to convert google url to normal url (remove the notation by google)
+ggurl()
+{
+     echo $1 |cut -d '&' -f 5 | cut -d = -f 2 | sed 's/%2F/\//g' | sed 's/%3A/:/g'
+}
+
+## Shell function to remove ansi color codes (use 'man 5 dir_colrs' to find ANSI color code definitions)
+rmcolor()
+{
+    sed -r "s/\x1B\[[0-9;]*[mK]//g" $1
+}
+
+
+### shell function to find file
+### Usage:
+###      ff <File_name>
+###      ff <File_name:line_no>
+### Example:
+###      ff \*.c      -- Find all *.c files
+###      ff \*.[ch]   -- Find all *.c or *.h files
+###      ff Makefile
+### NOTE:
+###      Filename is case-sensitive
+#ff()
+#{
+#    # check if $1 contains line number
+#    echo $1| grep ":" > /dev/null
+#	if [ "$?" == 0 ] ; then
+#	    filename=`echo "$1" | cut -d ':' -f 1`
+#        linenum=`echo $1 | cut -d ':' -f 2`
+#        echo "time find . -name '\.svn' -prune -o -name \"$filename\" -exec printf \"%s:%s: \n\" {} \$linenum \;  | convertpath"
+#        echo "(Either way for wildcard search: \"ff \*.c\" or \"ff '*.c'\" )"
+#        echo
+#        time find . -name '\.svn' -prune -o -name "$filename" -exec printf "%s:%s: \n" {} $linenum \;  | convertpath
+#    else
+#        echo "time find . -name '\.svn' -prune -o -name \"$1\" -print |convertpath"
+#        echo "(Either way for wildcard search: \"ff \*.c\" or \"ff '*.c'\" )"
+#        echo
+#        time find . -name '\.svn' -prune -o -name "$1" -print |convertpath
+#	fi
+#}
+#
+#
+
+## Special ff() version for MOCK
+##      - Add "$DISK_LETTER/$MOCK_PREFIX/root/" before current pwd
+## As compared to standard version:
+##      - Replace $HOME as $DISK_LETTER
+##
+## shell function to find file
+## Usage:
+##      ff <File_name>
+##      ff <File_name:line_no>
+## Example:
+##      ff \*.c      -- Find all *.c files
+##      ff \*.[ch]   -- Find all *.c or *.h files
+##      ff Makefile
+## NOTE:
+##      Filename is case-sensitive
+ff()
+{
+    # check if $1 contains line number
+    echo $1| grep ":" > /dev/null
+	if [ "$?" == 0 ] ; then
+	    filename=`echo "$1" | cut -d ':' -f 1`
+        linenum=`echo $1 | cut -d ':' -f 2`
+        cmd="time find . -name '\.svn' -prune -o -name \"$filename\" -exec printf \"%s$%s \n\" {} \$linenum \;  | sed 's;./;'`pwd`'/;'  | sed 's;'"$HOME"';'"$WINDOWS_PROGRAM$DISK_LETTER$DISK_ROOT"';' | sed 's;/;\\\\;g' | sed 's;\\$;/;g'"
+    else
+        cmd="time find . -name '\.svn' -prune -o -name "$1" -print | sed 's;./;'`pwd`'/;'  | sed 's;'"$HOME"';'"$WINDOWS_PROGRAM$DISK_LETTER$DISK_ROOT"';' | sed 's;/;\\\\;g' | sed 's;\\$;/;g'"
+	fi
+    echo "$cmd"
+    echo -e "(Either way for wildcard search: \"ff \*.c\" or \"ff '*.c'\" )\n\n"
+    eval $cmd
+}
+
+##varian: Find File then List in Long-format
+ffll()
+{
+    cmd="time find . -name '\.svn' -prune -o -name \"$1\" -exec  ls -l {} \;"
+    echo $cmd
+    echo -e "( \"shell style\" wildcard. Ex: ffll '*fs*' )\n"
+    eval $cmd
+}
+
+
+
+##varian: Find File then List in single-line mode: so that I can do further shell operation
+ffls()
+{
+    /bin/echo -e "time find . -name '\.svn' -prune -o -name \"$1\" -print"
+    /bin/echo -e "( \"shell style\" wildcard. Ex: ffls '*fs*' )\n"
+    time find . -name '\.svn' -prune -o -name "$1" -print
+}
+
+
+##varian: Find File and remove it
+ffrm()
+{
+    /bin/echo -e "time find . -name '\.svn' -prune -o -name \"$1\" -print -exec /bin/rm -rf {} \; "
+    /bin/echo -e "( \"shell style\" wildcard. Ex: ffls '*fs*' )\n"
+    time find . -name '\.svn' -prune -o -name "$1" -print -exec /bin/rm -rf {} \; 
+}
+
+
+## shell function to find string in files
+## Usage:
+##      fstr <File_name> <String> [other grep options]
+## Example:
+##      fstr *.[ch] Ikanos -i   -- Find 'Ikanos' in *.c or *.h with 'ignore case' option
+## NOTE:
+##      Filename is case-sensitive
+fstr()
+{
+    find -name $1 | xargs grep $3 $4 $5 -n -E $2
+
+}
+
+
+fshelp()
+{
+echo -e "**********"
+echo -e "fs"
+echo -e "~Jackie Yeh 2007/10/08"
+echo -e "**********"
+echo -e "shell function to find string in all subdirectory, exclude:"
+echo -e " -- binary files"
+echo -e " -- all files under .svn"
+echo -e " -- *.d"
+echo -e " "
+echo -e "Usage:"
+echo -e "     fs <String> [other grep options]"
+echo -e "NOTE:"
+echo -e "     wildcard pattern: in.*de will match inde, incde, inclde, include, ..."
+echo -e "Default options:"
+echo -e "     -n      print line number with output lines"
+echo -e "     -r      handle directories recursive"
+echo -e "     -I      skip binary files"
+echo -e "     ---color=always      Always use colors on match"
+echo -e "Possible options:"
+echo -e "     -w      match only whole words"
+echo -e "     -i      ignore case distinctions"
+echo -e "     -e      use PATTERN as a regular expression"
+echo -e "     -l      only print FILE names containing matches"
+echo -e "     -NUM    print NUM lines of output context, NUM can be 1, 2, 3, ..."
+echo -e "     --include=PATTERN     files that match PATTERN will be examined"
+echo -e "     --exclude=PATTERN     files that match PATTERN will be skipped."
+echo -e "     --color=never         don't use color. Useful for file output"
+echo -e "Example:"
+echo -e " --Find 'layers_dbglist' in all subdirectories"
+echo -e "     fs layers_dbglist"
+echo -e " --Find 'layers_dbglist' and "match only whole words" in all subdirectories"
+echo -e "     fs layers_dbglist -w"
+echo -e " --Find 'layers_dbglist' and "ignore the case" in all subdirectories"
+echo -e "     fs layers_dbglist -i"
+echo -e " --Find 'layers_dbglist' and "print only filenames" in all subdirectories"
+echo -e "     fs layers_dbglist -l"
+echo -e " --Find 'layers_dbglist' and "show 3 lines context" in all subdirectories"
+echo -e "     fs layers_dbglist -3"
+echo -e " --Find 'layers_dbglist' in \"*.c;*.cpp;*.h\" under all subdirectories"
+echo -e "     fs layers_dbglist --include='*.c*' --include='*.h'"
+echo -e " --Find 'layers_dbglist' excluding \"*.h\" under all subdirectories"
+echo -e "     fs layers_dbglist --exclude='*.h'"
+echo -e " --Find 'not modal' under all subdirectories"
+echo -e "     fs 'not modal'"
+echo -e " "
+echo -e " Variants of fs:"
+echo -e "     fsu(): find in current directory, no recursion"
+echo -e "     fsc(): find pattern only in '*.c'"
+echo -e "     fsh(): find pattern only in '*.h'"
+echo -e "     fsd(): find <function declaration> or <structure definition> in *.c or *.cpp or *.h"
+echo -e "     fsds(): find <structure definition> in *.c or *.cpp or *.h"
+
+}
+
+
+## NOTE:
+## Use fshelp to get the help
+##### History
+## 2012/4/16 rev. 2.0: To exclude Applibs folder (Search refsw and AppLibs seperately)
+##      Original was: time find -name '\.svn' -prune -o -type f -print0 | xargs -0 grep -n -I --exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --color=always $option "$pattern"  | convertpath
+## 2012/4/17 rev. 2.1: v2.0 + ignore 'BSEAV/bin' 
+##      Original was: time find -type d \( -name '\.svn' -o -name 'AppLibs' \) -prune -o -type f -print0 | xargs -0 grep -n -I --exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --color=always $option "$pattern"  | convertpath
+## 2013/10/07 rev. 2.2: add '-P0' to xargs to utlize multiple cores
+##      Original was: time find -type d \( -name '\.svn' -o -name 'AppLibs' -o -path './BSEAV/bin' \) -prune -o -type f -print0 | xargs -0 grep -n -I --exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --color=always $option "$pattern"  | convertpath
+## 2013/11/11 '-P0' by xargs is evil! more than 4 processes are used! then the whole system is locked. change to '-P4'
+#fs()
+#{
+#    pattern=$1
+#    option=
+#    if [ "$#" -gt "1" ] ; then
+#        shift
+#        option=$*
+#    fi        
+#    echo -e "time find -type d \( -name '\.svn' -o -name 'AppLibs' -o -path './BSEAV/bin' \) -prune -o -type f -print0 | xargs -0 -P4 grep -n -I --exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --color=always $option '$pattern' | convertpath:"
+#    echo -e "( \"Regular expression\" style wildcard. Ex: fs 'in.*de' )"
+#    time find -type d \( -name '\.svn' -o -name 'AppLibs' -o -path './BSEAV/bin' \) -prune -o -type f -print0 | xargs -0 -P4 grep -n -I --exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --color=always $option "$pattern"  | convertpath
+#}
+
+fs()
+{
+    LINE_OUTPUT_FORMAT="\e[90m"   # Set to GRAY, see http://misc.flogisoft.com/bash/tip_colors_and_formatting for color details
+    LINE_OUTPUT_NORMAL="\e[0m"    # Restore to default
+    CMD_FILE=$HOME/.fs_cmd_file
+    
+    # Save current GREP_COLORS. see grep man page: http://linux.die.net/man/1/grep
+    cur_grep_color=$GREP_COLORS
+    # set GREP_COLORS: unset the colors of fn (filename), ln (line #), and se (separators) -- so that we can control the line output format by LINE_OUTPUT_FORMAT
+    export GREP_COLORS="ms=01;31:mc=01;31:sl=:cx=:fn=:ln=:bn=32:se="
+
+    pattern=$1
+    option=
+    if [ "$#" -gt "1" ] ; then
+        shift
+        option=$*
+    fi      
+    echo -e "time find -type d \( -name '\.svn' -o -name 'AppLibs' -o -path './BSEAV/bin' \) -prune -o -type f -print0 | xargs -0 -P$NPROC grep -n -I --exclude='$CMD_FILE' --exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --exclude='ctags.tmp' --color=always $option '$pattern' \
+    | awk -F':' -v prog=\"$WINDOWS_PROGRAM\" -v disk=$DISK_LETTER -v root_path=\`pwd| sed 's;'\$HOME';'\$DISK_ROOT';'\` -v prefix=$MOCK_PREFIX -v fmt=$LINE_OUTPUT_FORMAT -v fmt_normal=$LINE_OUTPUT_NORMAL -v lnfmt=\"$LN_NUM_FORMAT\" -v last_path="" '
+        BEGIN {}
+        {
+            path=root_path\"/\"\$1;
+            if ( path != last_path ) 
+            {
+                file_count++;
+                last_path = path;
+            }
+            gsub(\"/\", \"\\\\\\\", path);
+            printf(\"%s%s%s%s%s%s%s\\\n\", fmt, prog, disk, path, lnfmt, \$2, fmt_normal);
+            \$1=\"\";
+            \$2=\"\";
+            printf(\"%s\\\n\", \$0);
+        }
+        END {printf(\"\\\n\\\nTotal %d occurrences in %d files\\\nRun again:\\\nsource $CMD_FILE\\\n\", NR, file_count)}'" | tee $CMD_FILE
+    echo -e "( \"Regular expression\" style wildcard. Ex: fs 'in.*de' to find 'inde', 'include', 'inc abde',... )\n\n"
+
+    source $CMD_FILE
+	#rm -rf .fs_cmd_file  #keep it to run again!
+	
+	# restor GREP_COLORS
+    export GREP_COLORS=$cur_grep_color
+}
+
+
+# special version of fs(): find in current directory, no recursion
+## 2013/11/11 '-P0' by xargs is evil! more than 4 processes are used! then the whole system is locked. change to '-P4'
+fsu()
+{
+    pattern=$1
+    option=
+    if [ "$#" -gt "1" ] ; then
+        shift
+        option=$*
+    fi        
+    echo -e "time find -maxdepth 1 -name '\.svn' -prune -o -type f -print0 | xargs -0 -P4 grep -n -I --exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --color=always $option '$pattern' | convertpath:"
+    echo -e "( \"Regular expression\" style wildcard. Ex: fs 'in.*de' )"
+    time find -maxdepth 1 -name '\.svn' -prune -o -type f -print0 | xargs -0 -P4 grep -n -I --exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --color=always $option "$pattern"  | convertpath
+}
+
+# special version of fs(): find pattern only in '*.c' or '*.cpp'
+##### History
+## 2012/4/16 rev. 2.0 to exclude Applibs folder (Search refsw and AppLibs seperately)
+##  Original was: time find -name '\.svn' -prune -o -regex '.*cp*$' -print0 | xargs -0 grep -n -I --color=always $option "$pattern"  | convertpath
+## 2013/11/11 '-P0' by xargs is evil! more than 4 processes are used! then the whole system is locked. change to '-P4'
+fsc()
+{
+    pattern=$1
+    option=
+    if [ "$#" -gt "1" ] ; then
+        shift
+        option=$*
+    fi        
+    echo -e "find -type d \( -name '\.svn' -o -name 'AppLibs' \) -prune -o -regex '.*cp*$' -print0 | xargs -0 -P4 grep -n -I --color=always $option '$pattern' | convertpath:"
+    echo -e "( \"Regular expression\" style wildcard. Ex: fs 'in.*de' )"
+    find -type d \( -name '\.svn' -o -name 'AppLibs' \) -prune -o -regex '.*cp*$' -print0 | xargs -0 -P4 grep -n -I --color=always $option "$pattern"  | convertpath
+}
+
+# special version of fs(): find pattern only in '*.h'
+##### History
+## 2012/4/16 rev. 2.0 to exclude Applibs folder (Search refsw and AppLibs seperately)
+##  Original was: time find -name '\.svn' -prune -o -name '*.h' -print0 | xargs -0 grep -n -I --color=always $option "$pattern"  | convertpath
+fsh()
+{
+    pattern=$1
+    option=
+    if [ "$#" -gt "1" ] ; then
+        shift
+        option=$*
+    fi        
+    echo -e "find -type d \( -name '\.svn' -o -name 'AppLibs' \) -prune -o -name '*.h' -print0 | xargs -0 -P4 grep -n -I --color=always $option '$pattern' | convertpath:"
+    echo -e "( \"Regular expression\" style wildcard. Ex: fs 'in.*de' )"
+    find -type d \( -name '\.svn' -o -name 'AppLibs' \) -prune -o -name '*.h' -print0 | xargs -0 -P4 grep -n -I --color=always $option "$pattern"  | convertpath
+}
+
+# special version of fs(): find function declaration in *.c or *.cpp and *.h
+# TRICKS: the "--color=always" option will generate a ";31m" which will bother ';' pattern
+#           so we have to disable color and enable it after find it
+# Yet another TRICKS: Finally I decide to include *.h also, so we don't have to search for ';'
+#       instead, we'll have to search the line begin with [a-zA-Z] so that it's a decalration 
+##### History
+## 2012/4/16 rev. 2.0 to exclude Applibs folder (Search refsw and AppLibs seperately)
+##  Original was: time find -name '\.svn' -prune -o -regex '.*[ch]p*$' -print0 | xargs -0 egrep -n -I $option -e "^[a-zA-Z].*$pattern|^$pattern.*"  |grep --color=always "$pattern" | convertpath
+fsd()
+{
+    pattern=$1
+    option=
+    if [ "$#" -gt "1" ] ; then
+        shift
+        option=$*
+    fi        
+    echo -e "time find -type d \( -name '\.svn' -o -name 'AppLibs' \) -prune -o -regex '.*[ch]p*$' -print0 | xargs -0 egrep -n -I $option -e '^[a-zA-Z].*$pattern|^$pattern.*' |grep --color=always '$pattern' | convertpath:"
+    echo -e "( \"Regular expression\" style wildcard. Ex: fs 'in.*de' )"
+    time find -type d \( -name '\.svn' -o -name 'AppLibs' \) -prune -o -regex '.*[ch]p*$' -print0 | xargs -0 egrep -n -I $option -e "^[a-zA-Z].*$pattern|^$pattern.*"  |grep --color=always "$pattern" | convertpath
+}
+
+
+# special version of fsd(): find Structure declaration in *.c or *.cpp and *.h
+fsds()
+{
+    pattern=$1
+    option=
+    if [ "$#" -gt "1" ] ; then
+        shift
+        option=$*
+    fi        
+    echo -e "time find -name '\.svn' -prune -o -regex '.*[ch]p*$' -print0 | xargs -0 egrep -n -I $option '^.*}.*$pattern|struct.*$pattern' |grep --color=always '$pattern'  | convertpath:"
+    echo -e "( \"Regular expression\" style wildcard. Ex: fs 'in.*de' )"
+    time find -name '\.svn' -prune -o -regex '.*[ch]p*$' -print0 | xargs -0 egrep -n -I $option "^.*}.*$pattern|struct.*$pattern"  |grep --color=always "$pattern" | convertpath
+}
+
+
+
+
+new_path1=`echo $PATH|grep '\.:'`
+if [ -z $new_path1 ]; then
+	PATH=.:$PATH
+fi
+
+new_path2=`echo $PATH|grep ':/sbin:'`
+if [ -z $new_path2 ]; then
+	PATH=$PATH:/sbin
+fi
+
+new_path3=`echo $PATH|grep ':/usr/local/sbin:'`
+if [ -z $new_path3 ]; then
+	PATH=$PATH:/usr/local/sbin
+fi
+
+new_path4=`echo $PATH|grep $HOME/tools`
+if [ -z $new_path4 ]; then
+	PATH=$PATH:$HOME/tools
+fi
+
