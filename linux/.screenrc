@@ -1,0 +1,13 @@
+#Jackie 2013/10/31: Known from http://serverfault.com/questions/32313/putty-and-screen-and-scroll-back-buffer
+#       To allow putty to scroll up.
+#       NOTE: After this setting, screen will utilize xterm (putty?) scroll buffer, they are integrated seamless!!!
+termcapinfo xterm ti@:te@
+
+#Jackie 2013/11/01: copied from /etc/screenrc, and change to termcapinfo
+# Long time I had this in my private screenrc file. But many people
+# seem to want it (jw):
+# we do not want the width to change to 80 characters on startup:
+# on suns, /etc/termcap has :is=\E[r\E[m\E[2J\E[H\E[?7h\E[?1;3;4;6l:
+#termcap xterm 'is=\E[r\E[m\E[2J\E[H\E[?7h\E[?1;4;6l'
+#terminfo xterm 'is=\E[r\E[m\E[2J\E[H\E[?7h\E[?1;4;6l'
+termcapinfo xterm 'is=\E[r\E[m\E[2J\E[H\E[?7h\E[?1;4;6l'
