@@ -128,7 +128,9 @@ fs()
         shift
         option=$*
     fi      
-    echo -e "time find -type d \( -name '\.svn' -o -name 'AppLibs' -o -path './BSEAV/bin' \) -prune -o -type f -print0 | xargs -0 -P$NPROC grep -n -I --exclude='$CMD_FILE' --exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --exclude='ctags.tmp' --color=always $option '$pattern' \
+
+    echo -e "fs v2.1 (20150318) - Find strings. Use 'fshelp' to check the usage.\n"
+    echo -e "time find -type d \( -name '\.svn' -o -name 'AppLibs' -o -path './BSEAV/bin' \) -prune -o -type f -print0 | xargs -0 grep -n -I --exclude='$CMD_FILE' --exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --exclude='ctags.tmp' --color=always $option '$pattern' \
     | awk -F':' -v prog=\"$WINDOWS_PROGRAM\" -v disk=$DISK_LETTER -v root_path=\`pwd | sed 's;'\$HOME';'\$D_HOME';' | sed 's;'^';'\$DISK_ROOT';'\` -v fmt=$LINE_OUTPUT_FORMAT -v fmt_normal=$LINE_OUTPUT_NORMAL -v lnfmt=\"$LN_NUM_FORMAT\" -v last_path="" '
         BEGIN {}
         {
@@ -140,17 +142,15 @@ fs()
             }
             gsub(\"/\", \"\\\\\\\", path);
             printf(\"%s%s%s%s%s%s%s\\\n\", fmt, prog, disk, path, lnfmt, \$2, fmt_normal);
-            \$1=\"\";
-            \$2=\"\";
-            printf(\"%s\\\n\", \$0);
+            printf(\"%s\\\n\", substr(\$0, 3+length(\$1)+length(\$2)));
         }
-        END {printf(\"\\\n\\\nTotal %d occurrences in %d files\\\nRun again:\\\nsource $CMD_FILE\\\n\", NR, file_count)}'" | tee $CMD_FILE
+        END {printf(\"\\\n\\\nTotal %d occurrences in %d files\\\nRun again:\\\nsh $CMD_FILE\\\n\", NR, file_count)}'" | tee $CMD_FILE
     echo -e "( \"Regular expression\" style wildcard. Ex: fs 'in.*de' to find 'inde', 'include', 'inc abde',... )\n\n"
 
-    source $CMD_FILE
-	#rm -rf .fs_cmd_file  #keep it to run again!
+    sh $CMD_FILE
+    #rm -rf .fs_cmd_file  #keep it to run again!
 	
-	# restor GREP_COLORS
+    # restor GREP_COLORS
     export GREP_COLORS=$cur_grep_color
 }
 
