@@ -7,7 +7,13 @@ fi
 
 # User specific aliases and functions
 
+# Set PS1 to YELLOW to distinguish other shells.
 export PS1="\[\e[33;1m\][\! \D{%m/%d %T} \u@\H \w]\n$ \[\e[0m\]"
+
+# Enable color in vi, and alias vi to vim
+export TERM=xterm
+alias vi='vim'
+
 
 ########################################################################
 ### Common settings for fs() and ff()
@@ -16,21 +22,32 @@ NPROC=`nproc`       # default to use all Processors, change it to a lower value 
 DISK_LETTER="W:"    # change for different drive
 
 ### Special settings for Mock. Ignored in normal server
-SDK_VER=sdk2_13.1   # change version if necessary
-MOCK_CFG="fedora-17-x86_64"
-MOCK_PREFIX="$MOCK_CFG-jackieyeh_$SDK_VER"
+SDK_TRUNK=SDK1     # Could be SDK1 or SDK2
+SDK_VER=    # SDK2: change version if necessary, SDK1: keep it empty
+SCRIPT_USER=$(cat $HOME/.whoami)
+if [ "$SCRIPT_USER" == "" ] ; then
+    echo -e "\n*** $HOME/.whoami not found. fs()/ff() may not work!\n\n"
+fi      
+MOCK_CFG="fedora-19-x86_64"
+MOCK_PREFIX="$MOCK_CFG-$SDK_TRUNK-$SCRIPT_USER${SDK_VER:+-}$SDK_VER"
 ### END -- Special settings for Mock. Ignored in normal server
 
-DISK_ROOT=/$MOCK_PREFIX/root    #Normal: 'DISK_ROOT='. Mock: 'DISK_ROOT=/$MOCK_PREFIX/root'
-WINDOWS_PROGRAM=""        #UltraEdit: 'WINDOWS_PROGRAM=' Notepad++: 'WINDOWS_PROGRAM="notepad++\ "' (Keep the trailing space and its previous escape (\) )
-LN_NUM_FORMAT="/"                   #Line number format. UltraEdit: 'LN_NUM_FORMAT="/"', Notepad++: 'LN_NUM_FORMAT=" -n"' (Keep the leading space)
+export WINDOWS_PROGRAM=""        #UltraEdit: 'WINDOWS_PROGRAM=' Notepad++: 'WINDOWS_PROGRAM="notepad++\ "' (Keep the trailing space and its previous escape (\) )
+export LN_NUM_FORMAT="/"                   #Line number format. UltraEdit: 'LN_NUM_FORMAT="/"', Notepad++: 'LN_NUM_FORMAT=" -n"' (Keep the leading space)
 
 ### POST process, don't change it!
 if [ "$DISK_ROOT" == "" ] ; then
-    D_HOME=
+    export D_HOME=""
 else
-    D_HOME=$HOME
+    export D_HOME=$HOME
 fi      
+
+if [ "$MOCK_PREFIX" == "" ] ; then
+    export DISK_ROOT=""
+else
+    export DISK_ROOT=/$MOCK_PREFIX/root
+fi      
+
 ########################################################################
 ### END -- Common settings for fs() and ff()
 ########################################################################
@@ -129,8 +146,8 @@ fs()
         option=$*
     fi      
 
-    echo -e "fs v2.1 (20150318) - Find strings. Use 'fshelp' to check the usage.\n"
-    echo -e "time find -type d \( -name '\.svn' -o -name 'AppLibs' -o -path './BSEAV/bin' \) -prune -o -type f -print0 | xargs -0 grep -n -I --exclude='$CMD_FILE' --exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --exclude='ctags.tmp' --color=always $option '$pattern' \
+    echo -e "fs v2.2 (20150327) - Find strings. Use 'fshelp' to check the usage.\n"
+    echo -e "time find -type d \( -name '\.svn' -o -name 'AppLibs' -o -path './BSEAV/bin' \) -prune -o -type f -print0 | xargs -0 grep -nIH --exclude='$CMD_FILE' --exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --exclude='ctags.tmp' --color=always $option '$pattern' \
     | awk -F':' -v prog=\"$WINDOWS_PROGRAM\" -v disk=$DISK_LETTER -v root_path=\`pwd | sed 's;'\$HOME';'\$D_HOME';' | sed 's;'^';'\$DISK_ROOT';'\` -v fmt=$LINE_OUTPUT_FORMAT -v fmt_normal=$LINE_OUTPUT_NORMAL -v lnfmt=\"$LN_NUM_FORMAT\" -v last_path="" '
         BEGIN {}
         {
