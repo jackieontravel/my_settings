@@ -7,209 +7,36 @@ fi
 
 # User specific aliases and functions
 
-# Set PS1 to YELLOW to distinguish other shells.
 export PS1="\[\e[33;1m\][\! \D{%m/%d %T} \u@\H \w]\n$ \[\e[0m\]"
 
-# Enable color in vi, and alias vi to vim
+# To show colors and enable vim in Mock:
 export TERM=xterm
 alias vi='vim'
 
 
-########################################################################
-### Common settings for fs() and ff()
-########################################################################
-NPROC=`nproc`       # default to use all Processors, change it to a lower value if it makes heavy load
-DISK_LETTER="W:"    # change for different drive
-
-### Special settings for Mock. Ignored in normal server
-SDK_TRUNK=SDK1     # Could be SDK1 or SDK2
-SDK_VER=    # SDK2: change version if necessary, SDK1: keep it empty
-SCRIPT_USER=$(cat $HOME/.whoami)
-if [ "$SCRIPT_USER" == "" ] ; then
-    echo -e "\n*** $HOME/.whoami not found. fs()/ff() may not work!\n\n"
-fi      
-MOCK_CFG="fedora-19-x86_64"
-MOCK_PREFIX="$MOCK_CFG-$SDK_TRUNK-$SCRIPT_USER${SDK_VER:+-}$SDK_VER"
-### END -- Special settings for Mock. Ignored in normal server
-
-export WINDOWS_PROGRAM=""        #UltraEdit: 'WINDOWS_PROGRAM=' Notepad++: 'WINDOWS_PROGRAM="notepad++\ "' (Keep the trailing space and its previous escape (\) )
-export LN_NUM_FORMAT="/"                   #Line number format. UltraEdit: 'LN_NUM_FORMAT="/"', Notepad++: 'LN_NUM_FORMAT=" -n"' (Keep the leading space)
-
-### POST process, don't change it!
-if [ "$DISK_ROOT" == "" ] ; then
-    export D_HOME=""
-else
-    export D_HOME=$HOME
-fi      
-
-if [ "$MOCK_PREFIX" == "" ] ; then
-    export DISK_ROOT=""
-else
-    export DISK_ROOT=/$MOCK_PREFIX/root
-fi      
-
-########################################################################
-### END -- Common settings for fs() and ff()
-########################################################################
-
-
-
+# To apply new-style fs()/ff()
+new_path4=`echo $PATH|grep $HOME/tools`
+if [ -z $new_path4 ]; then
+	PATH=$PATH:$HOME/tools
+fi
+source ~/tools/fs.sh
 
 #set history time format
 export HISTTIMEFORMAT='%m/%d %T '
 
-#2014/4/8: add this for mnt home:
-export MNTHOME=/mnt/home/jackieyeh
-
-alias h='history 15'
-alias hh='history $2'
-alias lm='ls -l --color=tty $* |more'
-alias la='ls -al --color=tty $*'
+# Handy aliases as used in Turtle
+# hh: Default show 50 historys, can be changed if $2 is assigned. Variables replacement in bash: http://www.suse.url.tw/sles10/lesson10.htm#30
+alias h='function __h() { history ${2:-15}; }; __h '
+alias hh='function __hh() { history ${2:-50}; }; __hh '
+alias ll='/bin/ls -Al --color=always $*'
+alias llc='/bin/ls -l --color=always $*'    #ll with 'Clean' view
+alias lll='/bin/ls -l --color=always $*'    #lll is more easy to type
+alias ls='/bin/ls -A --color=always $*'
+alias lsc='/bin/ls --color=always $*'
+alias lls='/bin/ls --color=always $*'
+alias lm='function __lm() { ls -Al --color=always $* |more; }; __lm '
+alias la='/bin/ls -al --color=always $*'
 alias md='mkdir'
 
 
-fshelp()
-{
-echo -e "**********"
-echo -e "fs"
-echo -e "~Jackie Yeh 2007/10/08"
-echo -e "**********"
-echo -e "shell function to find string in all subdirectory, exclude:"
-echo -e " -- binary files"
-echo -e " -- all files under .svn"
-echo -e " -- *.d"
-echo -e " "
-echo -e "Usage:"
-echo -e "     fs <String> [other grep options]"
-echo -e "NOTE:"
-echo -e "     wildcard pattern: in.*de will match inde, incde, inclde, include, ..."
-echo -e "Default options:"
-echo -e "     -n      print line number with output lines"
-echo -e "     -r      handle directories recursive"
-echo -e "     -I      skip binary files"
-echo -e "     ---color=always      Always use colors on match"
-echo -e "Possible options:"
-echo -e "     -w      match only whole words"
-echo -e "     -i      ignore case distinctions"
-echo -e "     -e      use PATTERN as a regular expression"
-echo -e "     -l      only print FILE names containing matches"
-echo -e "     -NUM    print NUM lines of output context, NUM can be 1, 2, 3, ..."
-echo -e "     --include=PATTERN     files that match PATTERN will be examined"
-echo -e "     --exclude=PATTERN     files that match PATTERN will be skipped."
-echo -e "     --color=never         don't use color. Useful for file output"
-echo -e "Example:"
-echo -e " --Find 'layers_dbglist' in all subdirectories"
-echo -e "     fs layers_dbglist"
-echo -e " --Find 'layers_dbglist' and "match only whole words" in all subdirectories"
-echo -e "     fs layers_dbglist -w"
-echo -e " --Find 'layers_dbglist' and "ignore the case" in all subdirectories"
-echo -e "     fs layers_dbglist -i"
-echo -e " --Find 'layers_dbglist' and "print only filenames" in all subdirectories"
-echo -e "     fs layers_dbglist -l"
-echo -e " --Find 'layers_dbglist' and "show 3 lines context" in all subdirectories"
-echo -e "     fs layers_dbglist -3"
-echo -e " --Find 'layers_dbglist' in \"*.c;*.cpp;*.h\" under all subdirectories"
-echo -e "     fs layers_dbglist --include='*.c*' --include='*.h'"
-echo -e " --Find 'layers_dbglist' excluding \"*.h\" under all subdirectories"
-echo -e "     fs layers_dbglist --exclude='*.h'"
-echo -e " --Find 'not modal' under all subdirectories"
-echo -e "     fs 'not modal'"
-echo -e " "
-echo -e " Variants of fs:"
-echo -e "     fsu(): find in current directory, no recursion"
-echo -e "     fsc(): find pattern only in '*.c'"
-echo -e "     fsh(): find pattern only in '*.h'"
-echo -e "     fsd(): find <function declaration> or <structure definition> in *.c or *.cpp or *.h"
-echo -e "     fsds(): find <structure definition> in *.c or *.cpp or *.h"
-
-}
-
-
-######
-## fs() using AWK, can support standard server & mock server. for Windows application: UltraEdit & notepad++ are suported
-######
-fs()
-{
-    LINE_OUTPUT_FORMAT="\e[90m"   # Set to GRAY, see http://misc.flogisoft.com/bash/tip_colors_and_formatting for color details
-    LINE_OUTPUT_NORMAL="\e[0m"    # Restore to default
-    CMD_FILE=$HOME/.fs_cmd_file
-    
-    # Save current GREP_COLORS. see grep man page: http://linux.die.net/man/1/grep
-    cur_grep_color=$GREP_COLORS
-    # set GREP_COLORS: unset the colors of fn (filename), ln (line #), and se (separators) -- so that we can control the line output format by LINE_OUTPUT_FORMAT
-    export GREP_COLORS="ms=01;31:mc=01;31:sl=:cx=:fn=:ln=:bn=32:se="
-
-    pattern=$1
-    option=
-    if [ "$#" -gt "1" ] ; then
-        shift
-        option=$*
-    fi      
-
-    echo -e "fs v2.2 (20150327) - Find strings. Use 'fshelp' to check the usage.\n"
-    echo -e "time find -type d \( -name '\.svn' -o -name 'AppLibs' -o -path './BSEAV/bin' \) -prune -o -type f -print0 | xargs -0 grep -nIH --exclude='$CMD_FILE' --exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --exclude='ctags.tmp' --color=always $option '$pattern' \
-    | awk -F':' -v prog=\"$WINDOWS_PROGRAM\" -v disk=$DISK_LETTER -v root_path=\`pwd | sed 's;'\$HOME';'\$D_HOME';' | sed 's;'^';'\$DISK_ROOT';'\` -v fmt=$LINE_OUTPUT_FORMAT -v fmt_normal=$LINE_OUTPUT_NORMAL -v lnfmt=\"$LN_NUM_FORMAT\" -v last_path="" '
-        BEGIN {}
-        {
-            path=root_path\"/\"\$1;
-            if ( path != last_path ) 
-            {
-                file_count++;
-                last_path = path;
-            }
-            gsub(\"/\", \"\\\\\\\", path);
-            printf(\"%s%s%s%s%s%s%s\\\n\", fmt, prog, disk, path, lnfmt, \$2, fmt_normal);
-            printf(\"%s\\\n\", substr(\$0, 3+length(\$1)+length(\$2)));
-        }
-        END {printf(\"\\\n\\\nTotal %d occurrences in %d files\\\nRun again:\\\nsh $CMD_FILE\\\n\", NR, file_count)}'" | tee $CMD_FILE
-    echo -e "( \"Regular expression\" style wildcard. Ex: fs 'in.*de' to find 'inde', 'include', 'inc abde',... )\n\n"
-
-    sh $CMD_FILE
-    #rm -rf .fs_cmd_file  #keep it to run again!
-	
-    # restor GREP_COLORS
-    export GREP_COLORS=$cur_grep_color
-}
-
-
-
-## Special ff() version for MOCK
-##      - Add "$DISK_LETTER/$MOCK_PREFIX/root/" before current pwd
-## As compared to standard version:
-##      - Replace $HOME as $DISK_LETTER
-##
-## shell function to find file
-## Usage:
-##      ff <File_name>
-##      ff <File_name:line_no>
-## Example:
-##      ff \*.c      -- Find all *.c files
-##      ff \*.[ch]   -- Find all *.c or *.h files
-##      ff Makefile
-## NOTE:
-##      Filename is case-sensitive
-ff()
-{
-    # check if $1 contains line number
-    echo $1| grep ":" > /dev/null
-	if [ "$?" == 0 ] ; then
-	    filename=`echo "$1" | cut -d ':' -f 1`
-        linenum=`echo $1 | cut -d ':' -f 2`
-        cmd="time find . -name '\.svn' -prune -o -name \"$filename\" -exec printf \"%s$%s \n\" {} \$linenum \;  | sed 's;./;'`pwd`'/;' | sed 's;'"$HOME"';'"$D_HOME"';' | sed 's;'^';'"$WINDOWS_PROGRAM$DISK_LETTER$DISK_ROOT"';' | sed 's;/;\\\\;g' | sed 's;\\$;/;g'"
-    else
-        cmd="time find . -name '\.svn' -prune -o -name "$1" -print | sed 's;./;'`pwd`'/;' | sed 's;'"$HOME"';'"$D_HOME"';' | sed 's;'^';'"$WINDOWS_PROGRAM$DISK_LETTER$DISK_ROOT"';' | sed 's;/;\\\\;g' | sed 's;\\$;/;g'"
-	fi
-    echo "$cmd"
-    echo -e "(Either way for wildcard search: \"ff \*.c\" or \"ff '*.c'\" )\n\n"
-    eval $cmd
-}
-
-##varian: Find File then List in Long-format
-ffll()
-{
-    cmd="time find . -name '\.svn' -prune -o -name \"$1\" -exec  ls -l {} \;"
-    echo $cmd
-    echo -e "( \"shell style\" wildcard. Ex: ffll '*fs*' )\n"
-    eval $cmd
-}
 
