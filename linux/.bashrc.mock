@@ -20,6 +20,9 @@ if [ -z $new_path4 ]; then
 fi
 source ~/tools/fs.sh
 
+# Setup ST compile environment
+source ~/.compile_env_sdk2.sh
+
 #set history time format
 export HISTTIMEFORMAT='%m/%d %T '
 
