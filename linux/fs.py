@@ -91,7 +91,7 @@ def genFsCmdFile(pattern, *options):
 	elif (fsType == "ch") | (fsType == "hc") :
 		file_type="-type f -name *.[c\|cc\|cpp\|h\|hh]"
 	elif fsType:
-		file_type="-type f -name " + '$fst'
+		file_type="-type f -name " + fsType
 	else:
 		file_type="-type f"
 
