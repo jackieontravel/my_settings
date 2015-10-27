@@ -7,7 +7,15 @@
 ################################################################################
 function fs() 
 { 
-	fs.py fs $*;
+	# Make sure the quoted searching pattern can be handled 
+	pattern=$1
+	if [ $# > 2 ]; then
+		shift;
+		fs.py fs "$pattern" $*;
+	else
+		fs.py fs "$pattern";
+	fi
+	
 	if [ $? == 0 ]; then 
 		source $HOME/.fs_cmd_file
 	fi
