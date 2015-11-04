@@ -13,11 +13,25 @@ export TERM=xterm
 alias vi='vim'
 
 
+# Add current path in the $PATH
+new_path1=`echo $PATH|grep '\.:'`
+if [ -z $new_path1 ]; then
+	PATH=.:$PATH
+fi
+
+# Add armv7 toolchain: armv7-linux-XXX
+new_path2=`echo $PATH|grep '/opt/STM/STLinux-2.4/devkit/armv7/target/usr/bin'`
+if [ -z $new_path2 ]; then
+	PATH=$PATH:/opt/STM/STLinux-2.4/devkit/armv7/target/usr/bin
+fi
+
 # To apply new-style fs()/ff()
 new_path4=`echo $PATH|grep $HOME/tools`
 if [ -z $new_path4 ]; then
 	PATH=$PATH:$HOME/tools
 fi
+
+# To prepare fs/ff environment
 source ~/tools/fs.sh
 
 ### Check if we are in a MOCK chroot shell:
