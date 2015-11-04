@@ -20,9 +20,9 @@ if [ -z $new_path1 ]; then
 fi
 
 # Add armv7 toolchain: armv7-linux-XXX
-new_path2=`echo $PATH|grep '/opt/STM/STLinux-2.4/devkit/armv7/target/usr/bin'`
+new_path2=`echo $PATH|grep '/opt/STM/STLinux-2.4/devkit/armv7/bin'`
 if [ -z $new_path2 ]; then
-	PATH=$PATH:/opt/STM/STLinux-2.4/devkit/armv7/target/usr/bin
+	PATH=$PATH:/opt/STM/STLinux-2.4/devkit/armv7/bin
 fi
 
 # To apply new-style fs()/ff()
