@@ -9,7 +9,7 @@ function fs()
 { 
 	# Make sure the quoted searching pattern can be handled 
 	pattern=$1
-	if [ $# > 2 ]; then
+	if [ "$#" -gt "2" ] ; then
 		shift;
 		fs.py fs "$pattern" $*;
 	else
@@ -147,9 +147,6 @@ fsds()
 function ff() 
 { 
 	fs.py ff $*;
-	# if [ $? == 0 ]; then 
-		# source $HOME/.ff_cmd_file
-	# fi
 }; 
 
 
