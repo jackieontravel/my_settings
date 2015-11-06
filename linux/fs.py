@@ -127,8 +127,6 @@ def genFsCmdFile(pattern, *options):
     awk_line = []
     awk_line.append( 'BEGIN {}' )
     awk_line.append( '{' )
-    # awk_line.append( 'print NF' )
-    # awk_line.append( 'print $0' )
     awk_line.append( '    if ( NF >= 3 )' )
     awk_line.append( '    {' )
     awk_line.append( '        path=root_path"/"$1;' )
