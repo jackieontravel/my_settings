@@ -9,10 +9,14 @@ function fs()
 { 
 	# Make sure the quoted searching pattern can be handled 
 	pattern=$1
-	if [ "$#" -gt "2" ] ; then
-		shift;
+
+echo $#
+	if [ "$#" -gt "1" ] ; then
+echo great
+	shift;
 		fs.py fs "$pattern" $*;
 	else
+echo No great
 		fs.py fs "$pattern";
 	fi
 	
