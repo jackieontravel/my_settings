@@ -145,7 +145,7 @@ def genFsCmdFile(pattern, *options):
     awk_line.append( '        printf("%s\\n", $0);' )
     awk_line.append( '    }' )
     awk_line.append( '}' )
-    awk_line.append( 'END {printf("\\n\\nTotal %d lines in %d files\\nRun again:\\nbash ' +  CMD_FILE + '\\n", line_count, file_count)}' )
+    awk_line.append( 'END {printf("\\n\\nTotal %d lines in %d files\\nShow command:\\ncat ' +  CMD_FILE + '\\n", line_count, file_count)}' )
     
     # concatenate above awk script with new line ('\n') to be read easily
     nl="\n"
