@@ -60,5 +60,28 @@ alias lm='function __lm() { ls -Al --color=always $* |more; }; __lm '
 alias la='/bin/ls -al --color=always $*'
 alias md='mkdir'
 
+####################################################################################################
+####################################################################################################
+## Elapsed time derived from build.bash
+# Set the starting time to calculate elpased time
+function st()
+{
+    # To provide the elapsed time for a build, first save the current time.
+    start_time=`date '+%j %H %M %S'`
+    stfrom=`date`
+}
+
+#----------------------------------------------------------------------------
+# Compute and print the elapsed time.
+#    Input - start_time must be set by st
+function et()
+{
+    # Get and print the elapsed time for this build job.
+    echo -e "===\nStarted from:\n$stfrom"
+    end_time=`date '+%j %H %M %S'`
+    echo "$end_time $start_time" | awk '{et=((($1*24+$2)*60+$3)*60+$4)-((($5*24+$6)*60+$7)*60+$8);es=et%60;em=int(et/60);printf ("\n===> Elapsed time  %dm %02ds\n\n",em,es)}'
+    date
+}
+
 
 
