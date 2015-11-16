@@ -14,15 +14,6 @@ cWHITE='\e[37m'
 WARNING_NF="${cBOLD}${cYELLOW}/!\ Not found /!\ ${cDEF}"
 WARNING_RO="${cBOLD}${cYELLOW}/!\ Read only /!\ ${cDEF}"
 
-### Check if we are in a MOCK chroot shell:
-########################################################################
-### NOT_IN_MOCK=0: in Mock
-### Supporting scripts
-### NOT_IN_MOCK=1: NOT in Mock
-########################################################################
-export NOT_IN_MOCK=$(mount |grep chroot>/dev/null; echo $?)
-# REF: http://stackoverflow.com/questions/75182/detecting-a-chroot-jail-from-within
-
 ###########################################################################
 #  SDK2
 ###########################################################################
@@ -358,7 +349,7 @@ ccsdk2_201()
 
 		target=$target_top/opt/STM/STLinux-2.4/devkit/armv7/target
 		alias gotarget='cd $target'
-		fi        
+    fi        
 
 }
  
