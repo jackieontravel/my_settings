@@ -46,7 +46,6 @@ source $HOME/tools/fs.sh
 # Special for Mock: Setup ST compile environment
 export NOT_IN_MOCK=$(mount |grep chroot>/dev/null; echo $?)
     # REF: http://stackoverflow.com/questions/75182/detecting-a-chroot-jail-from-within
-source $HOME/.compile_env_st.sh
-
+source $HOME/.compile_env_sdk2.sh
 
 
