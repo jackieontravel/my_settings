@@ -4,14 +4,15 @@ if [ -f /etc/bashrc ]; then
 	. /etc/bashrc
 fi
 
-# User specific aliases and functions
-
+# Special prompt for Mock: yellow prompt w/ full path
 export PS1="\[\e[33;1m\][\! \D{%m/%d %T} \u@\H \w]\n$ \[\e[0m\]"
+
+#set history time format
+export HISTTIMEFORMAT='%m/%d %T '
 
 # To show colors and enable vim in Mock:
 export TERM=xterm
 alias vi='vim'
-
 
 # Add current path in the $PATH
 new_path1=`echo $PATH|grep '\.:'`
@@ -31,57 +32,19 @@ if [ -z $new_path4 ]; then
 	PATH=$PATH:$HOME/tools
 fi
 
-# To prepare fs/ff environment
-source ~/tools/fs.sh
 
-### Check if we are in a MOCK chroot shell:
-### NOT_IN_MOCK=0: in Mock
-### NOT_IN_MOCK=1: NOT in Mock
-export NOT_IN_MOCK=$(mount |grep chroot>/dev/null; echo $?)
-# REF: http://stackoverflow.com/questions/75182/detecting-a-chroot-jail-from-within
+########################################################################
+### Supporting scripts
+########################################################################
 
-# Setup ST compile environment
-source ~/.compile_env_sdk2.sh
+# Common for .bashrc: bash common fliases/functions:
+source $HOME/.bashrc_func.sh
 
-#set history time format
-export HISTTIMEFORMAT='%m/%d %T '
+# Common for .bashrc: fs/ff tools:
+source $HOME/tools/fs.sh
 
-# Handy aliases as used in Turtle
-# hh: Default show 50 historys, can be changed if $2 is assigned. Variables replacement in bash: http://www.suse.url.tw/sles10/lesson10.htm#30
-alias h='function __h() { history ${2:-15}; }; __h '
-alias hh='function __hh() { history ${2:-50}; }; __hh '
-alias ll='/bin/ls -Al --color=always $*'
-alias llc='/bin/ls -l --color=always $*'    #ll with 'Clean' view
-alias lll='/bin/ls -l --color=always $*'    #lll is more easy to type
-alias ls='/bin/ls -A --color=always $*'
-alias lsc='/bin/ls --color=always $*'
-alias lls='/bin/ls --color=always $*'
-alias lm='function __lm() { ls -Al --color=always $* |more; }; __lm '
-alias la='/bin/ls -al --color=always $*'
-alias md='mkdir'
-
-####################################################################################################
-####################################################################################################
-## Elapsed time derived from build.bash
-# Set the starting time to calculate elpased time
-function st()
-{
-    # To provide the elapsed time for a build, first save the current time.
-    start_time=`date '+%j %H %M %S'`
-    stfrom=`date`
-}
-
-#----------------------------------------------------------------------------
-# Compute and print the elapsed time.
-#    Input - start_time must be set by st
-function et()
-{
-    # Get and print the elapsed time for this build job.
-    echo -e "===\nStarted from:\n$stfrom"
-    end_time=`date '+%j %H %M %S'`
-    echo "$end_time $start_time" | awk '{et=((($1*24+$2)*60+$3)*60+$4)-((($5*24+$6)*60+$7)*60+$8);es=et%60;em=int(et/60);printf ("\n===> Elapsed time  %dm %02ds\n\n",em,es)}'
-    date
-}
+# Special for Mock: Setup ST compile environment
+source $HOME/.compile_env_sdk2.sh
 
 
 

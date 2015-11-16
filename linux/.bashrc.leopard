@@ -1,8 +1,13 @@
 # .bashrc
 ##############################################
 # History
-# 2014/6/3     - Derived from Leopard (172.21.8.173)
-# 2015/11/16   - Put aliases and function definitions to .bashrc_func.sh, this makes .bashrc cleaner.
+# 2014/5/14     - Fix set_if_empty() bug
+#               - Fix common_reset_option() bug
+#               - Fix common_u132() TITLE bug
+#               - Add common_u134() and c131t21()
+# 2014/5/19     - Fix the error: "-bash: [: too many arguments" for common_u132, common_u134
+# 2014/6/13     - Add elapsed time functions: st, et
+# 2015/11/16    - Put aliases and function definitions to .bashrc_func.sh, this makes .bashrc cleaner.
 ##############################################
 
 # Source global definitions
@@ -28,7 +33,7 @@ export SVN_EDITOR=vi
 # set prompt to green color
 #export PS1="\[\e[32;1m\][\u@\H \W]\$ \[\e[0m\]" 
 ## with full pwd
-export PS1="\[\e[34;1m\][\! \D{%m/%d %T} \u@\H \w]\n\$ \[\e[0m\]" 
+export PS1="\[\e[32;1m\][\! \D{%m/%d %T} \u@\H \w]\n\$ \[\e[0m\]" 
 
 #set history time format
 export HISTTIMEFORMAT='%m/%d %T '
@@ -64,6 +69,6 @@ source $HOME/.bashrc_func.sh
 # Common for .bashrc: fs/ff tools:
 source $HOME/tools/fs.sh
 
-# Special for Turtle in Ubuntu: Include ST compiling environment scriptss
-source $HOME/.compile_env_st.sh
+# Special for Leopard: Include Broadcom compiling environment scriptss
+source $HOME/.compile_env_brcm.sh
 

@@ -34,6 +34,7 @@ DISK_LETTER=""
 ##############################################################################
 
 # Check if we are in Mock. original Linux command:
+# REF: http://stackoverflow.com/questions/75182/detecting-a-chroot-jail-from-within
 ### export NOT_IN_MOCK=$(mount |grep chroot>/dev/null; echo $?)
 def checkIfRunningInMock():
     global NOT_IN_MOCK, sudo_cmd, DISK_ROOT, D_HOME, DISK_LETTER
