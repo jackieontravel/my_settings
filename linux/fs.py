@@ -6,7 +6,6 @@ import sys
 import cStringIO
 from subprocess import *
 
-
 #### User-specific variables, change to meet actual situations  ##############
 DISK_LETTER_NORMAL="U:"
 DISK_LETTER_MOCK="W:"
@@ -17,6 +16,10 @@ EXCLUDE_FILES="--exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map
 
 # We don't skip too many dirs for ff, hopefully we can still find *.o
 FF_EXCLUDE_DIRS="-name .svn -o -name .git -o -name .repo"
+
+FS_REL_VER=os.environ.get('FS_REL_VER')
+FS_REL_DATE=os.environ.get('FS_REL_DATE')
+
 ##############################################################################
 
 
@@ -64,7 +67,7 @@ def checkIfRunningInMock():
 def genFsCmdFile(pattern, *options):
     global NOT_IN_MOCK, sudo_cmd
 
-    print "fs v3.0 (20151016) - Find strings by Python pre-processing. Use 'fshelp' to check the usage.\n"
+    print ( "fs %s (%s) - Find strings by Python pre-processing. Use 'fshelp' to check the usage.\n" % (FS_REL_VER, FS_REL_DATE ))
 
     LINE_OUTPUT_FORMAT="\033[90m"   # Set to GRAY, see http://misc.flogisoft.com/bash/tip_colors_and_formatting for color details
     LINE_OUTPUT_NORMAL="\033[0m"    # Restore to default
@@ -110,6 +113,56 @@ def genFsCmdFile(pattern, *options):
     cmd_find = "time find " + "-maxdepth " + str(md) + " -type d \\( " + FS_EXCLUDE_DIRS + " \\) -prune -o " + file_type + " -print0" + find_opt
     cmd_grep = "xargs -0 -P" + str(NPROC) + " grep -nIH " + EXCLUDE_FILES + " --color=always " + grep_opt + " '" + pattern + "'"
 
+    # f2/f3/f4/.../f8 are used to specify second grep option. This  is also called a search filter
+    # default color to f2: bold GREEN
+    if os.environ.get('f2'):
+        f2_opt = os.environ.get('f2')
+        cmd_grep2 = '| GREP_COLORS="ms=01;32" grep ' + f2_opt + ' --color=always '
+    else:
+        cmd_grep2 = ""
+    
+    # default color to f3: bold YELLOW
+    if os.environ.get('f3'):
+        f3_opt = os.environ.get('f3')
+        cmd_grep3 = '| GREP_COLORS="ms=01;33" grep ' + f3_opt + ' --color=always '
+    else:
+        cmd_grep3 = ""
+    
+    # default color to f4: bold BLUE
+    if os.environ.get('f4'):
+        f4_opt = os.environ.get('f4')
+        cmd_grep4 = '| GREP_COLORS="ms=01;34" grep ' + f4_opt + ' --color=always '
+    else:
+        cmd_grep4 = ""
+    
+    # default color to f5: bold PINK
+    if os.environ.get('f5'):
+        f5_opt = os.environ.get('f5')
+        cmd_grep5 = '| GREP_COLORS="ms=01;35" grep ' + f5_opt + ' --color=always '
+    else:
+        cmd_grep5 = ""
+    
+    # default color to f6: underline RED
+    if os.environ.get('f6'):
+        f6_opt = os.environ.get('f6')
+        cmd_grep6 = '| GREP_COLORS="ms=04;31" grep ' + f6_opt + ' --color=always '
+    else:
+        cmd_grep6 = ""
+    
+    # default color to f7: underline GREEN
+    if os.environ.get('f7'):
+        f7_opt = os.environ.get('f7')
+        cmd_grep7 = '| GREP_COLORS="ms=04;32" grep ' + f7_opt + ' --color=always '
+    else:
+        cmd_grep7 = ""
+    
+    # default color to f8: underline YELLOW
+    if os.environ.get('f8'):
+        f8_opt = os.environ.get('f8')
+        cmd_grep8 = '| GREP_COLORS="ms=04;33" grep ' + f8_opt + ' --color=always '
+    else:
+        cmd_grep8 = ""
+    
     # The path under DISK_LETTER which we'll use in DOS 
     path_under_disk = os.getcwd().replace(os.environ.get('HOME'), D_HOME)
     path_under_disk = DISK_ROOT + path_under_disk
@@ -159,7 +212,8 @@ def genFsCmdFile(pattern, *options):
     # set GREP_COLORS: unset the colors of fn (filename), ln (line #), and se (separators) -- so that we can control the line output format by LINE_OUTPUT_FORMAT
     f.write ('export GREP_COLORS="ms=01;31:mc=01;31:sl=:cx=:fn=:ln=:bn=32:se="\n')
 
-    f.write ( cmd_find + " | " + cmd_grep  + " | " + cmd_awk )
+    f.write ( cmd_find + " | " + cmd_grep + cmd_grep2 + cmd_grep3 + cmd_grep4 + cmd_grep5 + cmd_grep6 + cmd_grep7 + cmd_grep8 + " | " + cmd_awk )
+    
     f.write ('\nexport GREP_COLORS=$cur_grep_color\n')
 
     f.close()

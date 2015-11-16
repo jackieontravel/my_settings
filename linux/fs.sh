@@ -1,5 +1,8 @@
 #!/bin/sh
 
+FS_REL_VER="v3.1"
+FS_REL_DATE="2015/11/16"
+
 #############################################################################
 ### Usage: 
 ###	1. source fs.sh in .bashrc.
@@ -12,9 +15,9 @@ function fs()
 
 	if [ "$#" -gt "1" ] ; then
 	shift;
-		fs.py fs "$pattern" $*;
+		FS_REL_VER=$FS_REL_VER FS_REL_DATE=$FS_REL_DATE fs.py fs "$pattern" $*;
 	else
-		fs.py fs "$pattern";
+		FS_REL_VER=$FS_REL_VER FS_REL_DATE=$FS_REL_DATE fs.py fs "$pattern";
 	fi
 	
 	if [ $? == 0 ]; then 
@@ -27,8 +30,8 @@ function fs()
 fshelp()
 {
 echo -e "**********"
-echo -e "fs"
-echo -e "~Jackie Yeh 2015/10/19 v3.0"
+echo -e "fs ${FS_REL_VER}"
+echo -e "~Jackie Yeh ${FS_REL_DATE}"
 echo -e "**********"
 echo -e "shell function to find string in all subdirectory, exclude:"
 echo -e " -- binary files (*.o; *.so; *.map; )"
@@ -37,9 +40,27 @@ echo -e " -- tagging system files:ctags, ctags.tmp, GPATH, GRTAGS, GTAGS, tags"
 echo -e " -- *.d"
 echo -e " "
 echo -e "Usage:"
-echo -e "     fs <String> [other grep options]"
+echo -e "     [f2=<2nd_grep_opt>][f3=<3rd_grep_opt>][f4=<4th_grep_opt>][fst=<fs_Type>] [fsd=<fs_Depth>] [fsopt=<Find_option>] fs <String> [other grep options]"
 echo -e "NOTE:"
 echo -e "     wildcard pattern: in.*de will match inde, incde, inclde, include, ..."
+echo -e "Command-line Switch:"
+echo -e "	  fst	  Search assigned file types"
+echo -e "		Predefined types:"
+echo -e "	  		fst=c	  Search *.c,*.cpp only"
+echo -e "	  		fst=h	  Search *.h,*.hpp only"
+echo -e "	  		fst=ch  Search *.c, *.cpp, *.h, *.hpp"
+echo -e "	  		fst=hc  Same as 'fst=ch'"
+echo -e "		Other examples:"
+echo -e "			fst=Makefile"
+echo -e "			fst=Kconfig"
+echo -e "	  fsd	  Search only assigned depth"
+echo -e "		Examples:"
+echo -e "			fsd=1"
+echo -e "	  fsopt	Specify find option"
+echo -e "	  f2/f3/f4/f5/f6/f7/f8	2nd/3rd/4th/.../8th \"grep in reuslts\" options"
+echo -e "		Examples:"
+echo -e "			f2=\"-E ':[0-9]*:#' -v\" fs include"
+echo -e "			f2=\"'\\.c'\" fs unistd"
 echo -e "Default options:"
 echo -e "     -n      print line number with output lines"
 echo -e "     -r      handle directories recursive"
@@ -72,7 +93,7 @@ echo -e " --Find 'not modal' under all subdirectories"
 echo -e "     fs 'not modal'"
 echo -e " "
 echo -e " Variants of fs:"
-echo -e "     fsu(): find in current directory, no recursion"
+echo -e "     fsu(): find in cUrrent directory, no recursion"
 echo -e "     fsc(): find pattern only in '*.c'"
 echo -e "     fsh(): find pattern only in '*.h'"
 echo -e "     fsd(): find <function declaration> or <structure definition> in *.c or *.cpp or *.h"
