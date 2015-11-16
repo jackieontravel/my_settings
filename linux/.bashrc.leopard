@@ -67,6 +67,7 @@ fi
 source $HOME/.bashrc_func.sh
 
 # Common for .bashrc: fs/ff tools:
+export DOS_DISK_LETTER="L:"
 source $HOME/tools/fs.sh
 
 # Special for Leopard: Include Broadcom compiling environment scriptss

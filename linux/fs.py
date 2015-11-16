@@ -7,8 +7,16 @@ import cStringIO
 from subprocess import *
 
 #### User-specific variables, change to meet actual situations  ##############
-DISK_LETTER_NORMAL="U:"
-DISK_LETTER_MOCK="W:"
+# Default DISK_LETTER is U: for outside of MOCK
+if os.environ.get('DOS_DISK_LETTER'):
+    DISK_LETTER_NORMAL=os.environ.get('DOS_DISK_LETTER')
+else:    
+    DISK_LETTER_NORMAL="U:"
+# Default DISK_LETTER is W: for MOCK
+if os.environ.get('DOS_DISK_LETTER'):
+    DISK_LETTER_MOCK=os.environ.get('DOS_DISK_LETTER')
+else:    
+    DISK_LETTER_MOCK="W:"
 EDITOR="notepad++"
 LN_NUM_FORMAT=" -n"
 FS_EXCLUDE_DIRS="-name .svn -o -name AppLibs -o -path ./BSEAV/bin -o -path ./out -o -name .git -o -name .repo -o -name objs"
