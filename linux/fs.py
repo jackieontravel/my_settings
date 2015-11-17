@@ -8,16 +8,23 @@ from subprocess import *
 
 #### User-specific variables, change to meet actual situations  ##############
 # Default DISK_LETTER is U: for outside of MOCK
-if os.environ.get('DOS_DISK_LETTER'):
-    DISK_LETTER_NORMAL=os.environ.get('DOS_DISK_LETTER')
+if os.environ.get('WINDOWS_DISK'):
+    DISK_LETTER_NORMAL=os.environ.get('WINDOWS_DISK')
 else:    
     DISK_LETTER_NORMAL="U:"
+    
 # Default DISK_LETTER is W: for MOCK
-if os.environ.get('DOS_DISK_LETTER'):
-    DISK_LETTER_MOCK=os.environ.get('DOS_DISK_LETTER')
+if os.environ.get('WINDOWS_DISK'):
+    DISK_LETTER_MOCK=os.environ.get('WINDOWS_DISK')
 else:    
     DISK_LETTER_MOCK="W:"
-EDITOR="notepad++"
+    
+# Default editor is  "notepad++"
+if os.environ.get('WINDOWS_EDITOR'):
+    EDITOR=os.environ.get('WINDOWS_EDITOR')
+else:    
+    EDITOR="notepad++"
+    
 LN_NUM_FORMAT=" -n"
 FS_EXCLUDE_DIRS="-name .svn -o -name AppLibs -o -path ./BSEAV/bin -o -path ./out -o -name .git -o -name .repo -o -name objs"
 EXCLUDE_FILES="--exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --exclude='ctags.tmp' --exclude='GPATH' --exclude='GRTAGS' --exclude='GTAGS' --exclude='tags'"

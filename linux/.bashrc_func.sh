@@ -4,6 +4,19 @@
 # 2015/11/16    - Initial release for .bashrc_func.sh, to support handy functions and aliases for Bash.
 ##############################################
 
+
+########################################################################################################
+#   Default Values: 
+#   they are supposed to be set in the calling script (.bashrc), if not set, below are the default values
+########################################################################################################
+export WINDOWS_DISK=${WINDOWS_DISK:-"U:"}
+export WINDOWS_EDITOR=${WINDOWS_EDITOR:-"notepad++"}
+
+
+########################################################################################################
+#   Handy aliases
+########################################################################################################
+
 # hh: Default show 50 historys, can be changed if $2 is assigned. Variables replacement in bash: http://www.suse.url.tw/sles10/lesson10.htm#30
 alias h='function __h() { history ${2:-15}; }; __h '
 alias hh='function __hh() { history ${2:-50}; }; __hh '
@@ -16,6 +29,10 @@ alias lls='/bin/ls --color=always $*'
 alias lm='function __lm() { ls -Al --color=always $* |more; }; __lm '
 alias la='/bin/ls -al --color=always $*'
 alias md='mkdir'
+# Apply colordiff if the system installed it
+if [ -x /usr/bin/colordiff ]; then
+    alias diff=colordiff
+fi
 alias mkctags='time ctags --extra=f --links=no --verbose -R . '
 alias mkgtags='time gtags --skip-unreadable  --verbose '
 ## Jackie: Be careful that kernel3.10-sti may change in the future (if happened, add the new one)
@@ -124,18 +141,17 @@ svnmod()
     #    /bin/echo "svn status | grep ^[^?] | awk '{if (\$2==\"+\") printf(\"%s:\n%s\n\",\$1,\$3); else  printf(\"%s:\n%s\n\",\$1,\$2)}' | convertpath"
     #    svn status | grep ^[^?] | awk '{if ($2=="+") printf("%s:\n%s\n",$1,$3); else  printf("%s:\n%s\n",$1,$2)}'|convertpath
     
-    ### New way without convertpath. Set DISK_LETTER to Windows drive, eg. L, V, z, ...
-    if [ -z "$DISK_LETTER" ]; then
-        echo "ERROR. Please set DISK_LETTER first... "
+    ### New way without convertpath. Set WINDOWS_DISK to Windows drive, eg. L, V, z, ...
+    if [ -z "$WINDOWS_DISK" ]; then
+        echo "ERROR. Please set WINDOWS_DISK first... "
         return;
     fi
-    #export DISK_LETTER=U
     
     echo -n "$HOME" | sed 's/\//\\\\/g' | awk '{ printf "s/%s//", $1} ' > ~/.sed_svnmod.cmd
-    svn status | grep ^[^?" "]| awk -v DISK_LETTER=$DISK_LETTER -v WINDOWS_PROGRAM=$WINDOWS_PROGRAM '{status=substr($0, 1, 1);
+    svn status | grep ^[^?" "]| awk -v WINDOWS_DISK=$WINDOWS_DISK -v WINDOWS_EDITOR=$WINDOWS_EDITOR '{status=substr($0, 1, 1);
                             path=root_path"/"substr($0, 9);
                             gsub("/","\\",path );
-                            printf("%s:\n%s %s%s\n", status, WINDOWS_PROGRAM, DISK_LETTER, path)}' root_path=`pwd` | sed -f ~/.sed_svnmod.cmd
+                            printf("%s:\n%s %s%s\n", status, WINDOWS_EDITOR, WINDOWS_DISK, path)}' root_path=`pwd` | sed -f ~/.sed_svnmod.cmd
 }
 
 
@@ -153,10 +169,10 @@ svn status | grep ^[^?" "]| awk '{status=substr($0, 1, 1);
 
 
 ## Generate a command to show modified file in Tortoise GUI. Notation: svnmod+t=svnmodt
-## Tips: search ':\\' to be recoginzed as a DOS path
+## Tips: search ':\\' to be recoginzed as a Windows path
 svnmodt()
 {
-    svnmod |grep ':\\' | awk -v DISK_LETTER=$DISK_LETTER 'BEGIN{printf("\n\nTortoiseProc.exe /command:repostatus /path:\"")} {if (match($1, DiSK_LETTER)) filename=$2; else filename=$1; if (NR==1) printf("%s",filename); else printf("*%s",filename)} END {printf("\"\n\n\nTotal %d files\n", NR)}'
+    svnmod |grep ':\\' | awk -v WINDOWS_DISK=$WINDOWS_DISK 'BEGIN{printf("\n\nTortoiseProc.exe /command:repostatus /path:\"")} {if (match($1, DiSK_LETTER)) filename=$2; else filename=$1; if (NR==1) printf("%s",filename); else printf("*%s",filename)} END {printf("\"\n\n\nTotal %d files\n", NR)}'
 }
 
 
