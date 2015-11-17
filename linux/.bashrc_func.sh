@@ -35,8 +35,16 @@ if [ -x /usr/bin/colordiff ]; then
 fi
 alias mkctags='time ctags --extra=f --links=no --verbose -R . '
 alias mkgtags='time gtags --skip-unreadable  --verbose '
-## Jackie: Be careful that kernel3.10-sti may change in the future (if happened, add the new one)
-alias mkgtags_sdk2='sed "s/:skip=/:skip=obsp\/,u-boot\/,u-boot-scripts\/,build\/,docs\/,targetpacks\/,kernel3\/,kernel3.10-sti\/,build-*\/,/g" /etc/gtags.conf > gtags.conf; mkgtags '
+function mkgtags_nolink()
+{
+    # $1 to set manually excluded folders seperated by comma (,) 
+    linkFolders=$(find -type l -xtype d 2>/dev/null | awk '{ p=substr($0,2); gsub("/","\\/",p ); printf ( "%s\\/,", p)}')
+    sed "s/:skip=/:skip=$1,$linkFolders/g" /etc/gtags.conf > gtags.conf;
+    mkgtags
+}
+alias mkgtags_sdk2='mkgtags_nolink "kernel3-KERNEL_ML_3.4.*"'
+alias mkgtags_android='mkgtags_nolink'
+alias updgtags='time global -u' # To update gtags
 
 
 
