@@ -24,8 +24,12 @@ if os.environ.get('WINDOWS_EDITOR'):
     EDITOR=os.environ.get('WINDOWS_EDITOR')
 else:    
     EDITOR="notepad++"
+
+if EDITOR == "notepad++":
+    LN_NUM_FORMAT=" -n"
+else:    # Assume it's UltraEdit
+    LN_NUM_FORMAT="/"
     
-LN_NUM_FORMAT=" -n"
 FS_EXCLUDE_DIRS="-name .svn -o -name AppLibs -o -path ./BSEAV/bin -o -path ./out -o -name .git -o -name .repo -o -name objs"
 EXCLUDE_FILES="--exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --exclude='ctags.tmp' --exclude='GPATH' --exclude='GRTAGS' --exclude='GTAGS' --exclude='tags'"
 
