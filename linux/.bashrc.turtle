@@ -65,7 +65,5 @@ source $HOME/.bashrc_func.sh
 source $HOME/tools/fs.sh
 
 # Special for Turtle in Ubuntu: Include ST compiling environment scriptss
-export NOT_IN_MOCK=$(mount |grep chroot>/dev/null; echo $?)
-    # REF: http://stackoverflow.com/questions/75182/detecting-a-chroot-jail-from-within
 source $HOME/.compile_env_st.sh
 
