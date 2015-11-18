@@ -11,3 +11,9 @@ termcapinfo xterm ti@:te@
 #termcap xterm 'is=\E[r\E[m\E[2J\E[H\E[?7h\E[?1;4;6l'
 #terminfo xterm 'is=\E[r\E[m\E[2J\E[H\E[?7h\E[?1;4;6l'
 termcapinfo xterm 'is=\E[r\E[m\E[2J\E[H\E[?7h\E[?1;4;6l'
+
+# Jackie 2015/4/27: add screen caption to distinguish screen from normal session
+# REF: http://serverfault.com/questions/257975/how-to-check-if-im-in-screen-session
+# Other .screenrc format, see: https://www.debian-administration.org/article/560/An_introduction_to_the_visual_features_of_GNU_Screen
+caption always "%{= kc}Screen session [%t] on %H (system load: %l)%-28=%{= .m}%D %d.%m.%Y %0c"
+
