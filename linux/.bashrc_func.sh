@@ -180,7 +180,7 @@ svn status | grep ^[^?" "]| awk '{status=substr($0, 1, 1);
 ## Tips: search ':\\' to be recoginzed as a Windows path
 svnmodt()
 {
-    svnmod |grep ':\\' | awk -v WINDOWS_DISK=$WINDOWS_DISK 'BEGIN{printf("\n\nTortoiseProc.exe /command:repostatus /path:\"")} {if (match($1, WINDOWS_DISK)) filename=$2; else filename=$1; if (NR==1) printf("%s",filename); else printf("*%s",filename)} END {printf("\"\n\n\nTotal %d files\n", NR)}'
+    svnmod |grep ':\\' | awk -v WINDOWS_DISK=$WINDOWS_DISK 'BEGIN{printf("\n\nTortoiseProc.exe /command:repostatus /path:\"")} {if (match($1, WINDOWS_DISK)) filename=$1; else filename=$2; if (NR==1) printf("%s",filename); else printf("*%s",filename)} END {printf("\"\n\n\nTotal %d files\n", NR)}'
 }
 
 
