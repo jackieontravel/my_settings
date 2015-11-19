@@ -33,11 +33,16 @@ alias md='mkdir'
 if [ -x "`which colordiff 2>/dev/null`" ]; then
     alias diff=colordiff
 fi
-# Apply pygmentize if the system installed it. pless: pygmentize-less
+# Apply pygmentize if the system installed it. pl: pygmentize-less, it works for normal command and pipe
+# Set language: pl -l sh .bashrc
 if [ -x "`which pygmentize 2>/dev/null`" ]; then
-    alias pless='pygmentize |less'
+    function pl()
+    {
+        pygmentize -g -f 256 $* |less;
+    }
+    alias less='pl'
 else
-    alias pless='less'
+    alias pl='less'
 fi
 alias mkctags='time ctags --extra=f --links=no --verbose -R . '
 alias mkgtags='time gtags --skip-unreadable  --verbose '
@@ -67,7 +72,7 @@ function relpath()
 function findpdf ()
 {
 
-	# <xavi add> Jackie 2015/09/18, So far no way to make the funciton work! just echo it for manually input. Sad :(
+	# <xavi add> Jackie 2015/09/18, So far no way to make the function work! just echo it for manually input. Sad :(
 	#find . -name '*.pdf' -exec sh -c 'pdftotext "{}" - | grep --with-filename --label="{}" --color "$1" ' \;
 	echo -e "# Use the following command to search 'pattern' in every PDF file under current folder"
 	echo -e "find . -name '*.pdf' -exec sh -c 'pdftotext \"{}\" - | grep -n --with-filename --label="{}" --color \"pattern\" ' \;\n"
