@@ -18,9 +18,17 @@ if ((BASH_VERSINFO[0] >= 4)) && ((BASH_VERSINFO[1] >= 2))
     then shopt -s direxpand
 fi
 
-### Allow less to open a .tgz file #####################################
-export LESSOPEN="|/usr/bin/lesspipe %s" #for Ubuntu
-#export LESSOPEN="|||/usr/bin/lesspipe.sh %s" #for Fedora, maybe it's already default.
+### Allow less to open a compressed file (.tgz, .tar.gz, .zip, ...) ############################
+grep 'Fedora' /etc/issue > /dev/null
+if [ $? == 0 ]; then
+    export LESSOPEN="|/usr/bin/lesspipe.sh %s"
+else
+    # mostly for Ubuntu
+    export LESSOPEN="|/usr/bin/lesspipe %s"
+fi
+# To keep ANSI color code in less
+export LESS="-R"
+
 
 ## set svn editor #######################################################
 export SVN_EDITOR=vi
