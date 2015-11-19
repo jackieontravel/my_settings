@@ -30,11 +30,11 @@ alias lm='function __lm() { ls -Al --color=always $* |more; }; __lm '
 alias la='/bin/ls -al --color=always $*'
 alias md='mkdir'
 # Apply colordiff if the system installed it
-if [ -x "`which colordiff`" ]; then
+if [ -x "`which colordiff 2>/dev/null`" ]; then
     alias diff=colordiff
 fi
 # Apply pygmentize if the system installed it. pless: pygmentize-less
-if [ -x "`which pygmentize`" ]; then
+if [ -x "`which pygmentize 2>/dev/null`" ]; then
     alias pless='pygmentize |less'
 else
     alias pless='less'
