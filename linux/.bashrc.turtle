@@ -27,7 +27,7 @@ else
     export LESSOPEN="|/usr/bin/lesspipe %s"
 fi
 # To keep ANSI color code in less
-export LESS="-R"
+export LESS="-R -x4"
 
 
 ## set svn editor #######################################################
