@@ -1,7 +1,7 @@
 #!/bin/sh
 
-FS_REL_VER="v3.1"
-FS_REL_DATE="2015/11/16"
+FS_REL_VER="v3.2"
+FS_REL_DATE="2015/11/24"
 
 #############################################################################
 ### Usage: 
@@ -166,24 +166,38 @@ fsds()
 
 
 ################################################################################
-function ff() 
-{ 
-	fs.py ff $*;
-}; 
+# Tricks about not expanding the glob. 
+# See https://stackoverflow.com/questions/11456403/stop-shell-wildcard-character-expansion/22945024#22945024
+# So that we can use 'ff *.c' to find files, this is a great improvement since v3.2
 
+# Minor modification to original function as described in above web, as we need 2 arguments at least for fs.py
+function reset_expansion()
+{
+    CMD="$1"
+    shift
+    if [ $# -gt 1 ]; then
+        CMD="$CMD $1"
+        shift
+    fi
+    
+    eval $CMD "$*"
+    set +f
+}
+
+alias ff='set -f; reset_expansion fs.py ff'
 
 ffhelp()
 {
 	echo -e "**********"
-	echo -e "ff"
-	echo -e "~Jackie Yeh 2015/10/19 v3.0"
+    echo -e "ff ${FS_REL_VER}"
+    echo -e "~Jackie Yeh ${FS_REL_DATE}"
 	echo -e "**********"
 	echo -e "shell function to find files"
 	echo -e " "
 	echo -e "Usage can be illustrated by examples:"
 	echo -e "    ff example.c    -- Find the file: example.c"
-	echo -e "    ff \*.c         -- Find all *.c files"
-	echo -e "    ff \*.[ch]      -- Find all *.c or *.h files"
+	echo -e "    ff *.c         -- Find all *.c files"
+	echo -e "    ff *.[ch]      -- Find all *.c or *.h files"
 	echo -e "    ff Makefile 1   -- Find 'Makefile' in current dir"
 	echo -e "    ff Makefile src -- Find 'Makefile' in 'src' dir"
 	echo -e "    ff .bashrc 1 ~  -- Find '.bashrc' in $HOME dir, don't search sub-dirs"
@@ -197,25 +211,16 @@ ffhelp()
 
 
 ##varian: Find File then List in Long-format
-ffll()
-{
-    fft=ll ff  $*
-}
+alias ffll='set -f; reset_expansion fft=ll fs.py ff'
 
 
 
 ##varian: Find File then List in single-line mode: so that I can do further shell operation
-ffls()
-{
-    fft=ls ff  $*
-}
+alias ffls='set -f; reset_expansion fft=ls fs.py ff'
 
 
 ##varian: Find File and remove it
-ffrm()
-{
-    fft=rm ff  $*
-}
+alias ffrm='set -f; reset_expansion fft=rm fs.py ff'
 
 
 
