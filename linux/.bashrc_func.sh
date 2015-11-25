@@ -20,15 +20,16 @@ export WINDOWS_EDITOR=${WINDOWS_EDITOR:-"notepad++"}
 # hh: Default show 50 historys, can be changed if $2 is assigned. Variables replacement in bash: http://www.suse.url.tw/sles10/lesson10.htm#30
 alias h='function __h() { history ${2:-15}; }; __h '
 alias hh='function __hh() { history ${2:-50}; }; __hh '
-alias ll='/bin/ls -Al --color=always $*'
-alias llc='/bin/ls -l --color=always $*'    #ll with 'Clean' view
-alias lll='/bin/ls -l --color=always $*'    #lll is more easy to type
-alias ls='/bin/ls -A --color=always $*'
-alias lsc='/bin/ls --color=always $*'
-alias lls='/bin/ls --color=always $*'
+alias ll='/bin/ls -Al --color=always'
+alias llc='/bin/ls -l --color=always'    #ll with 'Clean' view
+alias lll='/bin/ls -l --color=always'    #lll is more easy to type
+alias ls='/bin/ls -A --color=always'
+alias lsc='/bin/ls --color=always'
+alias lls='/bin/ls --color=always'
 alias lm='function __lm() { ls -Al --color=always $* |more; }; __lm '
-alias la='/bin/ls -al --color=always $*'
+alias la='/bin/ls -al --color=always'
 alias md='mkdir'
+alias grep='grep --color' # in case grep w/o color is needed. use 'grep --color=never'
 # Apply colordiff if the system installed it
 if [ -x "`which colordiff 2>/dev/null`" ]; then
     alias diff=colordiff
@@ -40,7 +41,7 @@ if [ -x "`which pygmentize 2>/dev/null`" ]; then
     {
         pygmentize -g -f 256 $* |less;
     }
-    alias less='pl'
+    alias pless='pl'
 else
     alias pl='less'
 fi
