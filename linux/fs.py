@@ -258,7 +258,7 @@ def runFfCmd(pattern, *options):
     convertToDos = 0
     ffType = os.environ.get('fft')
     if ffType == "ll":
-        post_op = "-exec ls -al --color {} \; "
+        post_op = "-exec ls -ald --color {} \; "
     elif ffType == "ls":
         post_op = "-exec ls {} \; "
     elif ffType == "rm":
@@ -277,16 +277,28 @@ def runFfCmd(pattern, *options):
             md = int(options[0][0])
             # delete maxdepth as we've consume it.
             del options[0][0]
-    
+
+    # OS env 'fsd' has higher priority than options to assign depth
+    fsDepth = os.environ.get('fsd')
+    if fsDepth:
+        md=int(fsDepth)
+            
     # Then check if searching path is assigned
     # NOTE: Put a 'smart' check on the path: first check if it's a relative path, otherwise treat it as a absolute path.
     spath = "."
-    if len(options[0]) > 0:
-        if os.path.exists( "./" + options[0][0] ):
-            spath = "./" + options[0][0]
-        else:
-            spath = os.path.relpath( options[0][0], "." )
+    # OS env 'fsp' has higher priority than options to assign searching path
+    _spath = ""
+    if os.environ.get('fsp'):
+        _spath = os.environ.get('fsp')
+    elif len(options[0]) > 0:
+        _spath = options[0][0]
 
+    if len(_spath) > 0:
+        if os.path.exists( "./" + _spath ):
+            spath = "./" + _spath
+        else:
+            spath = os.path.relpath( _spath, "." )
+            
     # check if pattern contains line number
     if ":" in pattern:
         filename=pattern.split(":")[0]
