@@ -114,7 +114,9 @@ def genFsCmdFile(pattern, *options):
     elif (fsType == "ch") | (fsType == "hc") :
         file_type="-type f -name *.[c\|cc\|cpp\|h\|hh]"
     elif fsType:
-        file_type="-type f -name " + fsType
+        # we need a single quote to prevent shell globing.
+        # Eg. currnet contains a.c, then *.c is replace to a.c, not *.c as expected.
+        file_type="-type f -name '" + fsType + "'"
     else:
         file_type="-type f"
 
@@ -256,7 +258,7 @@ def runFfCmd(pattern, *options):
     convertToDos = 0
     ffType = os.environ.get('fft')
     if ffType == "ll":
-        post_op = "-exec ls -al {} \; "
+        post_op = "-exec ls -al --color {} \; "
     elif ffType == "ls":
         post_op = "-exec ls {} \; "
     elif ffType == "rm":

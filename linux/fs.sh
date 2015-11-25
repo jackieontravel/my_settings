@@ -1,7 +1,17 @@
 #!/bin/sh
 
-FS_REL_VER="v3.2"
-FS_REL_DATE="2015/11/24"
+FS_REL_VER="v3.2.1"
+FS_REL_DATE="2015/11/25"
+#############################################################################
+### Revison History
+###	2015/11/25  v3.2.1
+###	    [bugfix] Fix the bug that 'fst=*.c' may not working for 'fs' if current folder contains *.c file
+###	    [change] ffrm now confirms before really removes
+###	    [change] Add color display to 'ffll' results.
+###	    [code] code refactoring for 'ff'
+################################################################################
+
+
 
 #############################################################################
 ### Usage: 
@@ -170,8 +180,23 @@ fsds()
 # See https://stackoverflow.com/questions/11456403/stop-shell-wildcard-character-expansion/22945024#22945024
 # So that we can use 'ff *.c' to find files, this is a great improvement since v3.2
 
-# Minor modification to original function as described in above web, as we need 2 arguments at least for fs.py
-function reset_expansion()
+reset_ffopt()
+{
+    unset fft
+}
+
+noGlob_getOption()
+{
+    set -f
+    
+    unset FF_SHOPT
+    if [ z"$fft" != z ]; then
+        FF_SHOPT="$FF_SHOPT fft=$fft"
+    fi
+    reset_ffopt
+}
+
+runCmd_resetGlob()
 {
     CMD="$1"
     shift
@@ -180,11 +205,12 @@ function reset_expansion()
         shift
     fi
     
-    eval $CMD "$*"
+    eval $FF_SHOPT $CMD "$*"
+
     set +f
 }
 
-alias ff='set -f; reset_expansion fs.py ff'
+alias ff='noGlob_getOption; runCmd_resetGlob fs.py ff'
 
 ffhelp()
 {
@@ -211,22 +237,27 @@ ffhelp()
 
 
 ##varian: Find File then List in Long-format
-alias ffll='set -f; reset_expansion fft=ll fs.py ff'
-
+alias ffll='fft=ll ff'
 
 
 ##varian: Find File then List in single-line mode: so that I can do further shell operation
-alias ffls='set -f; reset_expansion fft=ls fs.py ff'
+alias ffls='fft=ls ff'
 
 
-##varian: Find File and remove it
-alias ffrm='set -f; reset_expansion fft=rm fs.py ff'
-
-
-
-
-
-
+##varian: Find File and remove it. it will show all searched files first, then press 'y' to really remove.
+_ll_then_rm()
+{
+    eval "fft=ll fs.py ff $*"
+    
+    echo -e "\n###\n"
+    read -p "Are you sure <y/n> (default: n)? " a
+    if [ z$a == z"y" ] || [ z$a == z"Y" ]; then 
+        eval "fft=rm fs.py ff $*"
+    fi
+    
+    set +f
+}
+alias ffrm='set -f; _ll_then_rm'
 
 
 
