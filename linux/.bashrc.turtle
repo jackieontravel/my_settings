@@ -26,7 +26,7 @@ else
     # mostly for Ubuntu
     export LESSOPEN="|/usr/bin/lesspipe %s"
 fi
-# To keep ANSI color code in less
+# To keep ANSI color code in less, and set TAB width to 4
 export LESS="-R -x4"
 
 

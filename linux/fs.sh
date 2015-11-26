@@ -1,9 +1,22 @@
 #!/bin/sh
 
-FS_REL_VER="v3.3.0"
-FS_REL_DATE="2015/11/25"
+export FS_REL_VER="v3.4.0"
+export FS_REL_DATE="2015/11/26"
+
 #############################################################################
 ### Revison History
+###	2015/11/26  v3.4.0
+###     [change] Run 'ff' by Linux native shell command, instead of python 'Popen', this greatly improve the running performance
+###     [add] Support 'fsp' for 'fs'
+###     [add] Add fsj to search Java and fsm to search Makefile
+###     [bugfix] Fix the globing issue for fsc/fsh when current directory contains *.c/*.h
+###     [change] Show version when running 'ff' -- align to 'fs'
+###     [change] Use 'less' to shwo fshelp and ffhelp as they are growing bigger.
+###	    [change] Update fshelp and ffhelp
+###	    [change] Use alias instead of functions for fs variants (fsc, fsh,...), this makes fs.sh simpler
+###     [change] Exclude 'gtags.conf' by default in 'fs'. It's a huge file and we don't need it.
+###     [change] Add color to 'ffls'
+###     [code] Replace all '$*' in shell function to '$@' which is the right parameters although they are similar.
 ###	2015/11/25  v3.3.0
 ###	    [add] Add 'fsd' and 'fsp' switch for 'ff' command
 ###	    [change] Update fshelp and ffhelp
@@ -16,6 +29,9 @@ FS_REL_DATE="2015/11/25"
 ###	    [code] Code refactoring for 'ff'
 ################################################################################
 
+
+export FS_CMD_FILE="$HOME/.fs_cmd_file"
+export FF_CMD_FILE="$HOME/.ff_cmd_file"
 
 
 #############################################################################
@@ -30,19 +46,19 @@ function fs()
 
 	if [ "$#" -gt "1" ] ; then
 	shift;
-		FS_REL_VER=$FS_REL_VER FS_REL_DATE=$FS_REL_DATE fs.py fs "$pattern" $*;
+		FS_REL_VER=$FS_REL_VER FS_REL_DATE=$FS_REL_DATE fs.py fs "$pattern" $@;
 	else
 		FS_REL_VER=$FS_REL_VER FS_REL_DATE=$FS_REL_DATE fs.py fs "$pattern";
 	fi
 	
 	if [ $? == 0 ]; then 
-		source $HOME/.fs_cmd_file
+		source $FS_CMD_FILE
 	fi
 }; 
 
 
 
-fshelp()
+_fshelp()
 {
     echo -e "**********"
     echo -e "fs ${FS_REL_VER}"
@@ -51,23 +67,26 @@ fshelp()
     echo -e "shell function to find string in all subdirectory, exclude:"
     echo -e " -- binary files (*.o; *.so; *.map; )"
     echo -e " -- all files version control: .svn, .git"
-    echo -e " -- tagging system files:ctags, ctags.tmp, GPATH, GRTAGS, GTAGS, tags"
+    echo -e " -- tagging system files:ctags, ctags.tmp, GPATH, GRTAGS, GTAGS, tags, gtags.conf"
     echo -e " -- *.d"
     echo -e " "
     echo -e "Usage:"
-    echo -e "     [f2=<2nd_grep_opt>]...[f8=<4th_grep_opt>][fst=<fs_Type>] [fsd=<fs_Depth>] [fsopt=<Find_option>] fs <String> [other grep options]"
+    echo -e "     [f2=<grep2_opt>]...[f8=<grep8_opt>][fst=<fs_Type>] [fsd=<fs_Depth>] [fsopt=<Find_option>] fs <String> [other grep options]"
     echo -e "NOTE:"
     echo -e "     wildcard pattern: in.*de will match inde, incde, inclde, include, ..."
     echo -e "Command-line Switch:"
     echo -e "	  fst	  - Search assigned file types"
     echo -e "		Predefined types:"
-    echo -e "	  		fst=c	  Search *.c,*.cpp only"
-    echo -e "	  		fst=h	  Search *.h,*.hpp only"
-    echo -e "	  		fst=ch  Search *.c, *.cpp, *.h, *.hpp"
-    echo -e "	  		fst=hc  Same as 'fst=ch'"
+    echo -e "	  		fsc/fst=c fs    - Search *.c,*.cpp only"
+    echo -e "	  		fsh/fst=h fs    - Search *.h,*.hpp only"
+    echo -e "	  		fsch/fst=ch fs  - Search *.c, *.cpp, *.h, *.hpp"
+    echo -e "	  		fsch/fst=hc fs  - Same as 'fst=ch'"
+    echo -e "	  		fsj/fst=j fs    - Search for *.java files"
+    echo -e "	  		fsm/fst=m fs    - Search for Makefile files (( '*.mak', 'makefile', 'Makefile', '*.mk', ',*.in')"
     echo -e "		Other examples:"
-    echo -e "			fst=Makefile"
     echo -e "			fst=Kconfig"
+    echo -e "		Search multiple file types:"
+    echo -e "			fst='*.java -o -name *.h'"
     echo -e "	  fsd	  - Search only assigned depth"
     echo -e "		Examples:"
     echo -e "			fsd=1"
@@ -83,7 +102,7 @@ fshelp()
     echo -e "Possible options:"
     echo -e "     -w      match only whole words"
     echo -e "     -i      ignore case distinctions"
-    echo -e "     -e      use PATTERN as a regular expression"
+    echo -e "     -e      use PATTERN as a regular expression. NOTE: This must be the last option"
     echo -e "     -l      only print FILE names containing matches"
     echo -e "     -NUM    print NUM lines of output context, NUM can be 1, 2, 3, ..."
     echo -e "     --include=PATTERN     files that match PATTERN will be examined"
@@ -109,30 +128,40 @@ fshelp()
     echo -e " "
     echo -e " Variants of fs:"
     echo -e "     fsu(): find in cUrrent directory, no recursion"
-    echo -e "     fsc(): find pattern only in '*.c'"
-    echo -e "     fsh(): find pattern only in '*.h'"
+    echo -e "     fsc(): find pattern only in C/C++ files ('*.c', '*.cc', '*.cpp')"
+    echo -e "     fsh(): find pattern only in header files ('*.h', '*.hh')"
+    echo -e "     fsch():find pattern only in C/C++ and header files ('*.c', '*.cc', '*.cpp', '*.h', '*.hh')"
+    echo -e "     fsj(): find pattern only in Java files ('*.java')"
+    echo -e "     fsm(): find pattern only in Makefile files (( '*.mak', 'makefile', 'Makefile', '*.mk', ',*.in')"
     echo -e "     fsd(): find <function declaration> or <structure definition> in *.c or *.cpp or *.h"
-    echo -e "     fsds(): find <structure definition> in *.c or *.cpp or *.h"
+    echo -e "     fsds():find <structure definition> in *.c or *.cpp or *.h"
+    echo -e " Special notes:"
+    echo -e "     * '-e' can be used to specify regular expression, be aware to put it as the last option."
+    echo -e "     * Search multiple targets: 'fs classpathentry -e ANDROID_FRAMEWORK -e eclipse -e'"
+    echo -e "     * When something wrong, check always check the command file: $FS_CMD_FILE"
+    echo -e "     * f2 .. f8 are processed before breaking grep resultss into two lines. Therefor it can process the path."
+    echo -e "     *** Under such case, the path is divided by '/' instead of '\\'"
 }
-
+# Follow the style of man page
+alias fshelp='_fshelp |less -P"fshelp line %lj?L/%L. (press h for help or q to quit)\. Use _fshelp to show plain text without less\."'
 
 # special version of fs(): find in cUrrent directory, no recursion
-fsu()
-{
-    fsd=1 fs $*
-}
+alias fsu='fsd=1 fs'
 
-# special version of fs(): find pattern only in '*.c' or '*.cpp'
-fsc()
-{
-    fst=c fs $*
-}
+# special version of fs(): find pattern only in C/C++ files ('*.c', '*.cc', '*.cpp')
+alias fsc='fst=c fs'
 
-# special version of fs(): find pattern only in '*.h'
-fsh()
-{
-    fst=h fs $*
-}
+# special version of fs(): find pattern only in header files ('*.h', '*.hh')
+alias fsh='fst=h fs'
+
+# special version of fs(): find pattern only in C/C++ and header files ('*.c', '*.cc', '*.cpp', '*.h', '*.hh')
+alias fsch='fst=ch fs'
+
+# special version of fs():  find pattern only in Java files ('*.java')
+alias fsj='fst=j fs'
+
+# special version of fs():  find pattern only in Makefile files (( '*.mak', 'makefile', 'Makefile', '*.mk', ',*.in')
+alias fsm='fst=m fs'
 
 # special version of fs(): find function Declaration in *.c or *.cpp and *.h
 # How it works:
@@ -147,7 +176,7 @@ fsd()
     option=
     if [ "$#" -gt "1" ] ; then
         shift
-        option=$*
+        option=$@
     fi
 
     fst=ch fs "^[a-zA-Z].*$pattern\|^$pattern.*" -e $option
@@ -170,7 +199,7 @@ fsds()
     option=
     if [ "$#" -gt "1" ] ; then
         shift
-        option=$*
+        option=$@
     fi
 
     fst=ch fs "^.*}.*$pattern\|struct.*$pattern" -e $option
@@ -217,14 +246,18 @@ runCmd_resetGlob()
         shift
     fi
     
-    eval $FF_SHOPT $CMD "$*"
+    eval $FF_SHOPT $CMD "$@"
+
+    if [ $? == 0 ]; then 
+		source $FF_CMD_FILE
+	fi
 
     set +f
 }
 
 alias ff='noGlob_getOption; runCmd_resetGlob fs.py ff'
 
-ffhelp()
+_ffhelp()
 {
 	echo -e "**********"
     echo -e "ff ${FS_REL_VER}"
@@ -261,6 +294,9 @@ ffhelp()
 	echo -e "     ffrm(): find files remove after conifrmation"
 
 }
+# Follow the style of man page
+alias ffhelp='_ffhelp |less -P"fshelp line %lj?L/%L. (press h for help or q to quit)\. Use _ffhelp to show plain text without less\."'
+
 
 
 
@@ -276,12 +312,18 @@ alias ffls='fft=ls ff'
 ll_rm_resetGlob()
 {
     # FF_SHOPT is collected from noGlob_getOption()
-    eval $FF_SHOPT fft=ll fs.py ff $*
+    eval $FF_SHOPT fft=ll fs.py ff $@
+    if [ $? == 0 ]; then 
+		source $FF_CMD_FILE
+	fi
     
     echo -e "\n###\n"
-    read -p "Are you sure <y/n> (default: n)? " a
+    read -p "Are you sure to remove all above files <y/n> (default: n)? " a
     if [ z$a == z"y" ] || [ z$a == z"Y" ]; then 
-        eval $FF_SHOPT fft=rm fs.py ff $*
+        eval $FF_SHOPT fft=rm fs.py ff $@
+        if [ $? == 0 ]; then 
+            source $FF_CMD_FILE
+        fi
     fi
     
     set +f
