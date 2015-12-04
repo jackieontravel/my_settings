@@ -143,7 +143,7 @@ _fshelp()
     echo -e "     *** Under such case, the path is divided by '/' instead of '\\'"
 }
 # Follow the style of man page
-alias fshelp='_fshelp |less -P"fshelp line %lj?L/%L. (press h for help or q to quit)\. Use _fshelp to show plain text without less\."'
+alias fshelp='_fshelp |less -P"fshelp line %lj?L/%L. ?e(END). (press h for help or q to quit)\. Use _fshelp to show plain text without less\."'
 
 # special version of fs(): find in cUrrent directory, no recursion
 alias fsu='fsd=1 fs'
@@ -295,7 +295,7 @@ _ffhelp()
 
 }
 # Follow the style of man page
-alias ffhelp='_ffhelp |less -P"fshelp line %lj?L/%L. (press h for help or q to quit)\. Use _ffhelp to show plain text without less\."'
+alias ffhelp='_ffhelp |less -P"fshelp line %lj?L/%L. ?e(END). (press h for help or q to quit)\. Use _ffhelp to show plain text without less\."'
 
 
 
