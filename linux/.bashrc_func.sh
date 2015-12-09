@@ -18,8 +18,8 @@ export WINDOWS_EDITOR=${WINDOWS_EDITOR:-"notepad++"}
 ########################################################################################################
 
 # hh: Default show 50 historys, can be changed if $2 is assigned. Variables replacement in bash: http://www.suse.url.tw/sles10/lesson10.htm#30
-alias h='function __h() { history ${2:-15}; }; __h '
-alias hh='function __hh() { history ${2:-50}; }; __hh '
+alias h='function __h() { history ${1:-15}; }; __h '
+alias hh='function __hh() { history ${1:-50}; }; __hh '
 alias ll='/bin/ls -Al --color=always'
 alias llc='/bin/ls -l --color=always'    #ll with 'Clean' view
 alias lll='/bin/ls -l --color=always'    #lll is more easy to type
