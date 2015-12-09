@@ -255,3 +255,7 @@ function showpstree()
     done
 }
 
+## Function to extrace RPM files without installing it.
+## Hint: use less <file.rpm> to see the description and files before extract it
+function rpmEx() { rpm2cpio $1 | cpio -idmv; }
+
