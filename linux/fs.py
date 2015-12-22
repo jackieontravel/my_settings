@@ -300,15 +300,25 @@ def genFfCmdFile(pattern, *options):
     _spath = ""
     if os.environ.get('fsp'):
         _spath = os.environ.get('fsp')
-    elif len(options[0]) > 0:
+    elif len(options[0]) > 0 and options[0][0][0] != '-':
         _spath = options[0][0]
+        # delete _spath as we've consume it.
+        del options[0][0]
 
     if len(_spath) > 0:
         if os.path.exists( "./" + _spath ):
             spath = "./" + _spath
         else:
             spath = os.path.relpath( _spath, "." )
-            
+
+    # check if "-i" option is set to ignore case
+    nameType = "-name"
+    if len(options[0]) > 0:
+        if options[0][0] == "-i":
+            nameType = "-iname"
+            del options[0][0]
+    
+
     # check if pattern contains line number
     if ":" in pattern:
         filename=pattern.split(":")[0]
@@ -317,7 +327,7 @@ def genFfCmdFile(pattern, *options):
         filename=pattern
         linenum=1
     
-    cmd_find = sudo_cmd + ' find ' + spath + ' -maxdepth ' + str(md) + ' -type d \\( ' + FF_EXCLUDE_DIRS + ' \\) -prune -o ' +  '-name "' + filename + '" ' + post_op
+    cmd_find = sudo_cmd + ' find ' + spath + ' -maxdepth ' + str(md) + ' -type d \\( ' + FF_EXCLUDE_DIRS + ' \\) -prune -o ' +  nameType + ' "' + filename + '" ' + post_op
 
     # The path under DISK_LETTER which we'll use in DOS 
     path_under_disk = DISK_ROOT + os.getcwd().replace(os.environ.get('HOME'), D_HOME)

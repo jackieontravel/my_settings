@@ -1,10 +1,13 @@
 #!/bin/sh
 
-export FS_REL_VER="v3.4.0"
-export FS_REL_DATE="2015/11/26"
-
+export FS_REL_VER="v3.5.0"
+export FS_REL_DATE="2015/12/22"
 #############################################################################
 ### Revison History
+###	2015/12/22  v3.5.0
+###     [add] Add '-i' to 'ff' to allow search filename and ignore case
+###     [add] Add '-h' and '--help' option to fs/ff to show usage
+###     [change] ffhelp improvement
 ###	2015/11/26  v3.4.0
 ###     [change] Run 'ff' by Linux native shell command, instead of python 'Popen', this greatly improve the running performance
 ###     [add] Support 'fsp' for 'fs'
@@ -44,11 +47,23 @@ function fs()
 	# Make sure the quoted searching pattern can be handled 
 	pattern=$1
 
-	if [ "$#" -gt "1" ] ; then
-	shift;
+	if [ $# -gt 1 ] ; then
+        shift;
 		FS_REL_VER=$FS_REL_VER FS_REL_DATE=$FS_REL_DATE fs.py fs "$pattern" $@;
 	else
-		FS_REL_VER=$FS_REL_VER FS_REL_DATE=$FS_REL_DATE fs.py fs "$pattern";
+        case "$pattern" in
+            "-h")
+                fshelp
+                return
+                ;;
+            "--help")
+                fshelp
+                return
+                ;;
+            *) 
+                FS_REL_VER=$FS_REL_VER FS_REL_DATE=$FS_REL_DATE fs.py fs "$pattern";
+                ;;
+        esac
 	fi
 	
 	if [ $? == 0 ]; then 
@@ -241,9 +256,26 @@ runCmd_resetGlob()
 {
     CMD="$1"
     shift
+
     if [ $# -gt 1 ]; then
         CMD="$CMD $1"
         shift
+
+        case "$1" in
+            "-h")
+                ffhelp
+                return
+                ;;
+            "--help")
+                ffhelp
+                return
+                ;;
+            *) 
+                ;;
+        esac
+    else
+        ffhelp
+        return
     fi
     
     eval $FF_SHOPT $CMD "$@"
@@ -266,7 +298,7 @@ _ffhelp()
 	echo -e "shell function to find files"
 	echo -e " "
     echo -e "Usage:"
-    echo -e "     [fft=<ff_Type>] [fsd=<fs_Depth>] [fsp=<search_Path>] ff <file_pattern>[:<line_number>]"
+    echo -e "     [fft=<ff_Type>] [fsd=<fs_Depth>] [fsp=<search_Path>] ff <file_pattern>[:<line_number>] [depth] [path] [-i]"
     echo -e "Command-line Switch:"
     echo -e "	  fft	    - Display type"
     echo -e "	    fft=ll	  ls long format"
@@ -287,6 +319,7 @@ _ffhelp()
 	echo -e "     ff Makefile 1      -- Find 'Makefile' in current dir"
 	echo -e "     ff Makefile src    -- Find 'Makefile' in 'src' dir"
 	echo -e "     ff .bashrc 1 ~     -- Find '.bashrc' in \$HOME dir, don't search sub-dirs"
+	echo -e "     ff *plus*.c -i     -- Find '*plus*.c' and ignore case"
 	echo -e "     fsp=\$croot fsd=3 ff Makefile  -- Find 'Makefile' from \$croot dir, search for 3 layers"
 	echo -e " Variants of ff:"
 	echo -e "     ffll(): find files, but don't convert to DOS format, instead show in ls long format"
