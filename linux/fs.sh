@@ -330,7 +330,7 @@ _ffhelp()
 	echo -e " Variants of ff:"
 	echo -e "     ffll(): find files, but don't convert to DOS format, instead show in ls long format"
 	echo -e "     ffls(): find files, but don't convert to DOS format, instead show in ls short format"
-	echo -e "     ffrm(): find files remove after conifrmation"
+	echo -e "     ffrm(): find files, remove after confirmation"
 
 }
 # Follow the style of man page
