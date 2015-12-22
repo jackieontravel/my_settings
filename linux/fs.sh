@@ -7,7 +7,7 @@ export FS_REL_DATE="2015/12/22"
 ###	2015/12/22  v3.5.0
 ###     [add] Add '-i' to 'ff' to allow search filename and ignore case
 ###     [add] Add '-h' and '--help' option to fs/ff to show usage
-###     [change] ffhelp improvement
+###     [change] fshelp/ffhelp improvement
 ###	2015/11/26  v3.4.0
 ###     [change] Run 'ff' by Linux native shell command, instead of python 'Popen', this greatly improve the running performance
 ###     [add] Support 'fsp' for 'fs'
@@ -90,7 +90,7 @@ _fshelp()
     echo -e " -- *.d"
     echo -e " "
     echo -e "Usage:"
-    echo -e "     [f2=<grep2_opt>]...[f8=<grep8_opt>][fst=<fs_Type>] [fsd=<fs_Depth>] [fsopt=<Find_option>] fs <String> [other grep options]"
+    echo -e "     [f2=<grep2_opt>]...[f8=<grep8_opt>][fst=<fs_Type>] [fsd=<fs_Depth>] [fsp=<search_Path>] [fsopt=<Find_option>] fs <String> [other grep options]"
     echo -e "NOTE:"
     echo -e "     wildcard pattern: in.*de will match inde, incde, inclde, include, ..."
     echo -e "Command-line Switch:"
@@ -109,7 +109,9 @@ _fshelp()
     echo -e "	  fsd	  - Search only assigned depth"
     echo -e "		Examples:"
     echo -e "			fsd=1"
-    echo -e "	  fsopt	Specify find option"
+    echo -e "	  fsp	  - Specify the path to start the search"
+    echo -e "	        The path can be set as relative path or absolute path"
+    echo -e "	  fsopt	  - Specify find option"
     echo -e "	  f2/f3/f4/f5/f6/f7/f8	- 2nd/3rd/4th/.../8th \"grep in reuslts\" options"
     echo -e "		Examples:"
     echo -e "			f2=\"-E ':[0-9]*:#' -v\" fs include"
@@ -313,7 +315,7 @@ _ffhelp()
     echo -e "	  fsd	    - Search only assigned depth"
     echo -e "		Examples:"
     echo -e "			fsd=1"
-    echo -e "	  fsp	    - Specify find option"
+    echo -e "	  fsp	    - Specify the path to start the search"
     echo -e "	        The path can be set as relative path or absolute path"
 	echo -e "Examples:"
 	echo -e "     ff example.c       -- Find the file: example.c"
