@@ -38,9 +38,13 @@ export FF_CMD_FILE="$HOME/.ff_cmd_file"
 
 
 #############################################################################
-### Usage: 
-###	1. source fs.sh in .bashrc.
-### 2. Add PATH to where fs.py is located
+### Installation: 
+### 1. Put fs.sh and fs.py in the same folder
+### 2. In $HOME/.bashrc, do the following:
+###     export WINDOWS_DISK="L:"    # Set your own disk name. defualt U: for normal env. W: for Mock
+###     export WINDOWS_EDITOR="notepad++"   # default is notepad++, this can be skipped if you use notepad++
+###     source <path_where_fs.sh_is_located>/fs.sh 
+###     export PATH=$PATH:<path_where_fs.sh_is_located>
 ################################################################################
 function fs() 
 { 
