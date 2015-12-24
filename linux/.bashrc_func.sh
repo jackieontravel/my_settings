@@ -259,3 +259,35 @@ function showpstree()
 ## Hint: use less <file.rpm> to see the description and files before extract it
 function rpmEx() { rpm2cpio $1 | cpio -idmv; }
 
+
+# Colorful grep: highlight the keywords and keep output others, especially useful in embedded system with full-function grep
+function cgrep1()
+{
+    GREP_COLORS="ms=01;31" grep --color=always -E "$1|\$"
+}
+
+function cgrep2()
+{
+    GREP_COLORS="ms=01;32" grep --color=always -E "$1|\$"
+}
+
+function cgrep3()
+{
+    GREP_COLORS="ms=01;33" grep --color=always -E "$1|\$"
+}
+
+function cgrep4()
+{
+    GREP_COLORS="ms=01;34" grep --color=always -E "$1|\$"
+}
+
+function cgrep5()
+{
+    GREP_COLORS="ms=01;35" grep --color=always -E "$1|\$"
+}
+
+function cgrep6()
+{
+    GREP_COLORS="ms=01;36" grep --color=always -E "$1|\$"
+}
+
