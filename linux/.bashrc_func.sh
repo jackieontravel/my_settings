@@ -131,7 +131,7 @@ function duus()
 #################################################################################
 alias ntpupdate='srv="tw.pool.ntp.org"; echo "sudo ntpdate $srv"; sudo ntpdate $srv'
 # command to check md5 checksum for software release
-alias chkmd5='cd ~ && cat a.txt | sed 's/^checksum:.*//g'  | tr -d "\r\n\t: " |  md5sum  | head -c 8'
+alias chkmd5='cat ~/a.txt | sed 's/^checksum:.*//g'  | tr -d "\r\n\t: " |  md5sum  | head -c 8'
 
 # common alias to goto specific directories:
 alias mog='killall mongoose; sleep 1; mongoose ~/.mongoose.cfg & echo -e "\n\nURL:\nhttp://172.21.8.173:8025/\n"; sleep 1; echo'
