@@ -214,3 +214,12 @@ function cgrep6l()
 {
     GREP_COLORS="ms=0;30;100" grep --color=always -E "^.*$1.*$|$" | cgrep6 "$1.*"
 }
+
+# get whole directory to current directory without creating folder
+# NOTE: always add a '/' to the end of URL, this makes sure only the target folder is fetched instead of its parrent
+function wget_dir()
+{
+    url="$1/"
+    wget -nd -r  --no-parent --reject="index.html*" $url
+}
+
