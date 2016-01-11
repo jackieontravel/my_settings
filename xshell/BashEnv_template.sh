@@ -217,9 +217,13 @@ function cgrep6l()
 
 # get whole directory to current directory without creating folder
 # NOTE: always add a '/' to the end of URL, this makes sure only the target folder is fetched instead of its parrent
-function wget_dir()
-{
-    url="$1/"
-    wget -nd -r  --no-parent --reject="index.html*" $url
+# Usage: wget_dir <url> [cut-dirs-numbers, default: 2]
+function wget_dir () 
+{ 
+    url="$1/";
+    [ $# -gt 1 ] && cut="$2"
+    
+    wget -r --no-parent --no-host-directories --reject="index.html*" --cut-dirs=${cut:-2} $url
 }
+
 
