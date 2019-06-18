@@ -45,6 +45,7 @@ export FF_CMD_FILE="$HOME/.ff_cmd_file"
 ###     export WINDOWS_EDITOR="notepad++"   # default is notepad++, this can be skipped if you use notepad++
 ###     source <path_where_fs.sh_is_located>/fs.sh 
 ###     export PATH=$PATH:<path_where_fs.sh_is_located>
+### NOTE: use 'set -f' before source to avoid file globbing. 
 ################################################################################
 function fs() 
 { 
@@ -71,7 +72,9 @@ function fs()
 	fi
 	
 	if [ $? == 0 ]; then 
+		set -f
 		source $FS_CMD_FILE
+		set +f
 	fi
 }; 
 

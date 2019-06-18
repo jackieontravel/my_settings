@@ -110,7 +110,7 @@ def genFsCmdFile(pattern, *options):
     elif (fsType == "ch") | (fsType == "hc") :
         file_type="-type f -name '*.[c\|cc\|cpp\|h\|hh]'"
     elif (fsType == "m")  | (fsType == "makefile")  | (fsType == "Makefile"):  # Search for Makefiles: *.mak, makefile, Makefile, *.mk, *.in
-        file_type="-type f \( -name *.mak -o -name makefile -o -name Makefile -o -name *.mk -o -name *.in \)"
+        file_type="-type f \( -name '*.mak' -o -name makefile -o -name Makefile -o -name '*.mk' -o -name '*.in' \)"
     elif (fsType == "j") | (fsType == "java"): # Search for Java
         file_type="-type f -name '*.java'"
     elif fsType:
@@ -145,7 +145,7 @@ def genFsCmdFile(pattern, *options):
     else:
         find_opt=""
 
-    cmd_find = "time find " + spath + " -maxdepth " + str(md) + " -type d \\( " + FS_EXCLUDE_DIRS + " \\) -prune -o " + file_type + " -print0" + find_opt
+    cmd_find = "time find " + find_opt + " " + spath + " -maxdepth " + str(md) + " -type d \\( " + FS_EXCLUDE_DIRS + " \\) -prune -o " + file_type + " -print0"
     cmd_grep = "xargs -0 -P" + str(NPROC) + " grep -nIH " + EXCLUDE_FILES + " --color=always " + grep_opt + " '" + pattern + "'"
 
     # f2/f3/f4/.../f8 are used to specify second grep option. This  is also called a search filter
