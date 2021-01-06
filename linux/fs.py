@@ -27,9 +27,17 @@ else:
 
 if EDITOR == "notepad++":
     LN_NUM_FORMAT=" -n"
-else:    # Assume it's UltraEdit
-    LN_NUM_FORMAT="/"
-    
+else:    # Linux default, mainly for vscode
+    LN_NUM_FORMAT=":"
+
+# Default path for Windows, option to keep Linux
+if os.environ.get('FS_PATH_TYPE'):
+    PATH_TYPE=os.environ.get('FS_PATH_TYPE')
+else:
+    PATH_TYPE="WINDOWS"
+
+
+
 FS_EXCLUDE_DIRS="-name .svn -o -name AppLibs -o -path ./BSEAV/bin -o -path ./out -o -name .git -o -name .repo -o -name objs"
 EXCLUDE_FILES="--exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --exclude='ctags.tmp' --exclude='GPATH' --exclude='GRTAGS' --exclude='GTAGS' --exclude='gtags.conf' --exclude='tags'"
 
@@ -88,7 +96,7 @@ def checkIfRunningInMock():
 def genFsCmdFile(pattern, *options):
     global NOT_IN_MOCK, sudo_cmd
 
-    print ( "fs %s (%s) - Find strings by Python pre-processing. Use 'fshelp' to check the usage.\n" % (FS_REL_VER, FS_REL_DATE ))
+    print ( "fs %s (%s) - Find strings by Python pre-processing. Use 'fshelp' to check the usage ('fs4linux' to keep Linux path).\n" % (FS_REL_VER, FS_REL_DATE ))
 
     LINE_OUTPUT_FORMAT="\033[90m"   # Set to GRAY, see http://misc.flogisoft.com/bash/tip_colors_and_formatting for color details
     LINE_OUTPUT_NORMAL="\033[0m"    # Restore to default
@@ -124,7 +132,7 @@ def genFsCmdFile(pattern, *options):
         md=int(fsDepth)
     else:
         md=9999
-        
+
     # Then check if searching path is assigned
     # NOTE: Put a 'smart' check on the path: first check if it's a relative path, otherwise treat it as a absolute path.
     spath = "."
@@ -199,7 +207,10 @@ def genFsCmdFile(pattern, *options):
         cmd_grep8 = ""
     
     # The path under DISK_LETTER which we'll use in DOS 
-    path_under_disk = DISK_ROOT + os.getcwd().replace(os.environ.get('HOME'), D_HOME)
+    if PATH_TYPE == "WINDOWS":
+        path_under_disk = DISK_ROOT + os.getcwd().replace(os.environ.get('HOME'), D_HOME)
+    else:
+        path_under_disk = ""
     
     awk_opt  = "-F':' "
     awk_opt += ' -v editor="' + EDITOR + '"'
@@ -209,7 +220,6 @@ def genFsCmdFile(pattern, *options):
     awk_opt += ' -v fmt_normal=' + LINE_OUTPUT_NORMAL 
     awk_opt += ' -v lnfmt="' + LN_NUM_FORMAT + '"'
     awk_opt += ' -v last_path='
-    
     # Escape noteice: use '\\' to reprent '\' in awk programe
     awk_line = []
     awk_line.append( 'BEGIN {}' )
@@ -222,7 +232,8 @@ def genFsCmdFile(pattern, *options):
     awk_line.append( '            file_count++;' )
     awk_line.append( '            last_path = path;' )
     awk_line.append( '        }' )
-    awk_line.append( '        gsub("/", "\\\\", path);' )
+    if PATH_TYPE == "WINDOWS":
+        awk_line.append( '        gsub("/", "\\\\", path);' )
     awk_line.append( '        printf("%s%s %s%s%s%s%s\\n", fmt, editor, disk, path, lnfmt, $2, fmt_normal);' )
     awk_line.append( '        printf("%s\\n", substr($0, 3+length($1)+length($2)));' )
     awk_line.append( '        line_count++;' )
@@ -256,7 +267,7 @@ def genFsCmdFile(pattern, *options):
 
 def genFfCmdFile(pattern, *options):
 
-    print ( "ff %s (%s) - Find files by Python pre-processing. Use 'ffhelp' to check the usage.\n" % (FS_REL_VER, FS_REL_DATE ))
+    print ( "ff %s (%s) - Find files by Python pre-processing. Use 'ffhelp' to check the usage ('fs4linux' to keep Linux path).\n" % (FS_REL_VER, FS_REL_DATE ))
 
     # If we are in mock, sudo is not necessary.
     if NOT_IN_MOCK == 1:
@@ -276,7 +287,8 @@ def genFfCmdFile(pattern, *options):
     else:
         #default to use "dos" type
         post_op="-print"
-        convertToDos = 1
+        if PATH_TYPE == "WINDOWS":
+            convertToDos = 1
 
     # default set maxdepth to 9999
     md=9999 
@@ -292,7 +304,7 @@ def genFfCmdFile(pattern, *options):
     fsDepth = os.environ.get('fsd')
     if fsDepth:
         md=int(fsDepth)
-            
+           
     # Then check if searching path is assigned
     # NOTE: Put a 'smart' check on the path: first check if it's a relative path, otherwise treat it as a absolute path.
     spath = "."
@@ -300,16 +312,15 @@ def genFfCmdFile(pattern, *options):
     _spath = ""
     if os.environ.get('fsp'):
         _spath = os.environ.get('fsp')
-    elif len(options[0]) > 0 and options[0][0][0] != '-':
-        _spath = options[0][0]
-        # delete _spath as we've consume it.
-        del options[0][0]
+    else:
+        _spath = os.path.dirname(pattern)
 
     if len(_spath) > 0:
         if os.path.exists( "./" + _spath ):
             spath = "./" + _spath
         else:
-            spath = os.path.relpath( _spath, "." )
+            # Unable to locate path, use "." to search everything.
+            spath = "."
 
     # check if "-i" option is set to ignore case
     nameType = "-name"
@@ -327,6 +338,8 @@ def genFfCmdFile(pattern, *options):
         filename=pattern
         linenum=1
     
+    filename_pattern = filename
+    filename = os.path.basename(filename)
     cmd_find = sudo_cmd + ' find ' + spath + ' -maxdepth ' + str(md) + ' -type d \\( ' + FF_EXCLUDE_DIRS + ' \\) -prune -o ' +  nameType + ' "' + filename + '" ' + post_op
 
     # The path under DISK_LETTER which we'll use in DOS 
@@ -366,7 +379,8 @@ def genFfCmdFile(pattern, *options):
     cmd_awk = "awk " + awk_opt + " '" + awk_prog + "'"
 
     f = open(FF_CMD_FILE, 'w')
-    f.write ( cmd_find + " | " + cmd_awk )
+    #f.write ( cmd_find + " | " + cmd_awk )
+    f.write ( cmd_find + " | grep " + filename_pattern + " | " + cmd_awk )
     f.close()
 
         

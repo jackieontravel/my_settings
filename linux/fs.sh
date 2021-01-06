@@ -1,9 +1,12 @@
 #!/bin/sh
 
-export FS_REL_VER="v3.5.0"
-export FS_REL_DATE="2015/12/22"
+export FS_REL_VER="v3.6.0"
+export FS_REL_DATE="2021/1/6"
 #############################################################################
 ### Revison History
+###	2021/1/6    v3.6.0
+###     [add] Allow fs/ff to run without converting path (run 'fs4linux' first)
+###     [add] Fix the bug that ff cannot accept dir/filename pattern.
 ###	2015/12/22  v3.5.0
 ###     [add] Add '-i' to 'ff' to allow search filename and ignore case
 ###     [add] Add '-h' and '--help' option to fs/ff to show usage
@@ -371,5 +374,24 @@ ll_rm_resetGlob()
     set +f
 }
 alias ffrm='noGlob_getOption; ll_rm_resetGlob'
+
+fs4linux()
+{
+    export WINDOWS_DISK="."
+    export WINDOWS_EDITOR=" "    
+    export FS_PATH_TYPE="LINUX"
+
+    echo "Run fs/ff and keep Linux path, don't convert to Windows path."
+}
+
+fs4windows()
+{
+    export WINDOWS_DISK=
+    export WINDOWS_EDITOR=  
+    export FS_PATH_TYPE=
+
+    echo "Run fs/ff for Windows (do path conversion)"
+}
+
 
 
