@@ -23,12 +23,14 @@ alias hh='function __hh() { history ${1:-50}; }; __hh '
 alias ll='/bin/ls -Al --color=always'
 alias llc='/bin/ls -l --color=always'    #ll with 'Clean' view
 alias lll='/bin/ls -l --color=always'    #lll is more easy to type
+alias llsort='/bin/ls -l --color=always --sort=time'    #lll is more easy to type
 alias ls='/bin/ls -A --color=always'
 alias lsc='/bin/ls --color=always'
 alias lls='/bin/ls --color=always'
 alias lm='function __lm() { ls -Al --color=always $* |more; }; __lm '
 alias la='/bin/ls -al --color=always'
 alias md='mkdir'
+alias mkcd='function __mkcd() { mkdir $1 && cd $1; }; __mkcd $1'
 alias grep='grep --color' # in case grep w/o color is needed. use 'grep --color=never'
 # Apply colordiff if the system installed it
 if [ -x "`which colordiff 2>/dev/null`" ]; then
@@ -58,7 +60,8 @@ alias mkgtags_sdk2='mkgtags_nolink "kernel3-KERNEL_ML_3.4.*"'
 alias mkgtags_android='mkgtags_nolink'
 alias updgtags='time global -u' # To update gtags
 
-
+# A handly alias to show timeout on Linux ping. REF: http://superuser.com/questions/270083/linux-ping-show-time-out
+alias pingt='__pingt() { s=0; while :; do s=$(($s+1)); result=$(ping $1 -c1 -W1 |/bin/grep from) && echo "$result, seq=$s" && sleep 1 || echo timeout; done }; __pingt $1'
 
 ### A handy python function to return relative path
 ### Usage: relpath <dst> <src>
@@ -84,6 +87,42 @@ function findpdf ()
 	# find . -name '*.pdf' -print0 | xargs -0 pdftotext 
 
 } 
+
+### 'screen' related functions
+### Useful command: C-A C-D   === deattach
+
+function schelp()
+{
+    echo "sc <session name> ---- create a new session w/ name: <session name>"
+    echo "scls ----------------- list existing sessions"
+    echo "scd  ----------------- deattach from current session"
+    echo "scr <session name> --- re-attach to <session name>"
+    echo "scrm <session name> -- remove <session name>, then list existing session"
+}
+# list existing sessions
+alias scls='screen -ls'
+
+# deattach from current session
+alias scd='screen -d'
+
+# re-attach, name: $1
+function scr()
+{
+    screen -rD $1
+}
+
+# Create a new session, name: $1
+# explicitely set buffer size to 20000
+function sc()
+{
+    screen -t $1 -S $1 -h 20000
+}
+
+# Remove existing session. name: $1
+function scrm()
+{
+    screen -S $1 -X quit && sleep 0.2; echo -e "\n### Current sessions:"; screen -ls
+}
 
 ### Handy functions to calculate disk usage 
 #################################################################################
@@ -193,6 +232,50 @@ svn status | grep ^[^?" "]| awk '{status=substr($0, 1, 1);
 svnmodt()
 {
     svnmod |grep ':\\' | awk -v WINDOWS_DISK=$WINDOWS_DISK 'BEGIN{printf("\n\nTortoiseProc.exe /command:repostatus /path:\"")} {if (match($1, WINDOWS_DISK)) filename=$1; else filename=$2; if (NR==1) printf("%s",filename); else printf("*%s",filename)} END {printf("\"\n\n\nTotal %d files\n", NR)}'
+}
+
+
+#################################################################################
+# "no-ignore" version of svnmod, svnmodl, svnmodt: to deal with libraries
+#################################################################################
+noisvnmod()
+{
+    ### Original way with 'convertpath', now just keep it for reference.
+    #    /bin/echo "svn status | grep ^[^?] | awk '{if (\$2==\"+\") printf(\"%s:\n%s\n\",\$1,\$3); else  printf(\"%s:\n%s\n\",\$1,\$2)}' | convertpath"
+    #    svn status | grep ^[^?] | awk '{if ($2=="+") printf("%s:\n%s\n",$1,$3); else  printf("%s:\n%s\n",$1,$2)}'|convertpath
+    
+    ### New way without convertpath. Set WINDOWS_DISK to Windows drive, eg. L, V, z, ...
+    if [ -z "$WINDOWS_DISK" ]; then
+        echo "ERROR. Please set WINDOWS_DISK first... "
+        return;
+    fi
+    
+    echo -n "$HOME" | sed 's/\//\\\\/g' | awk '{ printf "s/%s//", $1} ' > ~/.sed_svnmod.cmd
+    svn status --no-ignore | grep ^[^?" "]| awk -v WINDOWS_DISK=$WINDOWS_DISK -v WINDOWS_EDITOR=$WINDOWS_EDITOR '{status=substr($0, 1, 1);
+                            path=root_path"/"substr($0, 9);
+                            gsub("/","\\",path );
+                            printf("%s:\n%s %s%s\n", status, WINDOWS_EDITOR, WINDOWS_DISK, path)}' root_path=`pwd` | sed -f ~/.sed_svnmod.cmd
+}
+
+
+noisvnmodl()
+{
+### l stands for Linux format.
+### Use svnmodl to show modified file in Linux format, so that I can:
+###     - revert it individually with 'svn revert'
+###     - check diff with 'svn diff'
+svn status --no-ignore | grep ^[^?" "]| awk '{status=substr($0, 1, 1);
+                        path=substr($0, 9);
+                        printf("%s:\n%s\n",status,path)}'
+}
+
+
+
+## Generate a command to show modified file in Tortoise GUI. Notation: svnmod+t=svnmodt
+## Tips: search ':\\' to be recoginzed as a Windows path
+noisvnmodt()
+{
+    noisvnmod |grep ':\\' | awk -v WINDOWS_DISK=$WINDOWS_DISK 'BEGIN{printf("\n\nTortoiseProc.exe /command:repostatus /path:\"")} {if (match($1, WINDOWS_DISK)) filename=$1; else filename=$2; if (NR==1) printf("%s",filename); else printf("*%s",filename)} END {printf("\"\n\n\nTotal %d files\n", NR)}'
 }
 
 
