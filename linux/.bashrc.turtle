@@ -71,6 +71,10 @@ source $HOME/.bashrc_func.sh
 
 # Common for .bashrc: fs/ff tools:
 source $HOME/tools/fs.sh
+if [ "$TERM_PROGRAM" == "vscode" ]; then 
+    fs4linux
+fi
+
 
 # Common for vs code:
 source $HOME/tools/vscode/vscode.sh
