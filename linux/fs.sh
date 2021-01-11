@@ -1,9 +1,11 @@
 #!/bin/sh
 
-export FS_REL_VER="v3.6.0"
-export FS_REL_DATE="2021/1/6"
+export FS_REL_VER="v3.6.1"
+export FS_REL_DATE="2021/1/11"
 #############################################################################
 ### Revison History
+###	2021/1/11   v3.6.1
+###     [bugfix] Fix the bug that ff wildcard (Ex.: ff *.c) search gets nothing
 ###	2021/1/6    v3.6.0
 ###     [add] Allow fs/ff to run without converting path (run 'fs4linux' first)
 ###     [add] Fix the bug that ff cannot accept dir/filename pattern.

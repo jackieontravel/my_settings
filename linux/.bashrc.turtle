@@ -72,6 +72,9 @@ source $HOME/.bashrc_func.sh
 # Common for .bashrc: fs/ff tools:
 source $HOME/tools/fs.sh
 
+# Common for vs code:
+source $HOME/tools/vscode/vscode.sh
+
 # Special for Turtle in Ubuntu: Include ST compiling environment scriptss
 source $HOME/.compile_env_st.sh
 

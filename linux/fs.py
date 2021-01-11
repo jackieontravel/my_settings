@@ -380,7 +380,8 @@ def genFfCmdFile(pattern, *options):
 
     f = open(FF_CMD_FILE, 'w')
     #f.write ( cmd_find + " | " + cmd_awk )
-    f.write ( cmd_find + " | grep " + filename_pattern + " | " + cmd_awk )
+    grep_pattern = filename_pattern.replace("*", ".*");
+    f.write ( cmd_find + " | grep '" + grep_pattern + "' | " + cmd_awk )
     f.close()
 
         
