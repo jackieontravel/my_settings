@@ -698,9 +698,16 @@ alias listcolor='listcolor1; listcolor2'
 
 # get whole directory to current directory without creating folder
 # NOTE: always add a '/' to the end of URL, this makes sure only the target folder is fetched instead of its parrent
-function wget_dir()
+wget_dir()
 {
     url="$1/"
     wget -nd -r  --no-parent --reject="index.html*" $url
+}
+
+
+opath () 
+{ 
+    export PATH=${PATH#*:};
+    echo $PATH
 }
 
