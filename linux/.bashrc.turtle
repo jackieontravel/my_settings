@@ -5,6 +5,15 @@
 # 2015/11/16   - Put aliases and function definitions to .bashrc_func.sh, this makes .bashrc cleaner.
 ##############################################
 
+# Add path to the end of $PATH
+# Features: - check first, add only if not existed. Therefore .bashrc can run multiple times
+function add_path_to_end()
+{
+    if [ -n "$1" ]; then
+        [[ ":$PATH:" != *":$1:"* ]] && export PATH="$PATH:$1"
+    fi
+}
+
 # Source global definitions
 if [ -f /etc/bashrc ]; then
 	. /etc/bashrc
@@ -41,26 +50,15 @@ export PS1="\[\e[34;1m\][\! \D{%m/%d %T} \u@\H \w]\n\$ \[\e[0m\]"
 #set history time format
 export HISTTIMEFORMAT='%m/%d %T '
 
-new_path1=`echo $PATH|grep '\.:'`
-if [ -z $new_path1 ]; then
-	PATH=.:$PATH
-fi
+# Always add '.' as the first PATH
+[[ ":$PATH:" != *":.:"* ]] && export PATH=".:$PATH"
 
-new_path2=`echo $PATH|grep ':/sbin:'`
-if [ -z $new_path2 ]; then
-	PATH=$PATH:/sbin
-fi
-
-new_path3=`echo $PATH|grep ':/usr/local/sbin:'`
-if [ -z $new_path3 ]; then
-	PATH=$PATH:/usr/local/sbin
-fi
-
-new_path4=`echo $PATH|grep $HOME/tools`
-if [ -z $new_path4 ]; then
-	PATH=$PATH:$HOME/tools
-fi
-
+# Add other path to the end:
+add_path_to_end /sbin
+add_path_to_end /usr/local/sbin
+add_path_to_end $HOME/tools
+## For Sheldon battery analyzer
+add_path_to_end $HOME/nfs/sheldon/battery/battery_analyze
 
 ########################################################################
 ### Supporting scripts
@@ -82,3 +80,13 @@ source $HOME/tools/vscode/vscode.sh
 # Special for Turtle in Ubuntu: Include ST compiling environment scriptss
 source $HOME/.compile_env_st.sh
 
+
+alias buildrootbuilder='docker run -it --rm -v \
+                $HOME/.ssh:/home/br-user/.ssh \
+                --user $UID:$GID \
+                -v /etc/group:/etc/group:ro \
+                -v /etc/passwd:/etc/passwd:ro \
+                -v /etc/shadow:/etc/shadow:ro \
+                -v $PWD:/home/br-user \
+                --sysctl net.ipv4.tcp_window_scaling=0 \
+                resideo'

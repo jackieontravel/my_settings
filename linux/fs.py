@@ -1,42 +1,18 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-# This script works on Python 2.7
+# This script works on Python 3
 import os
 import sys
-import cStringIO
-from subprocess import *
+import io
+from subprocess import Popen, PIPE
 
 #### User-specific variables, change to meet actual situations  ##############
-# Default DISK_LETTER is U: for outside of MOCK
-if os.environ.get('WINDOWS_DISK'):
-    DISK_LETTER_NORMAL=os.environ.get('WINDOWS_DISK')
-else:    
-    DISK_LETTER_NORMAL="U:"
-    
-# Default DISK_LETTER is W: for MOCK
-if os.environ.get('WINDOWS_DISK'):
-    DISK_LETTER_MOCK=os.environ.get('WINDOWS_DISK')
-else:    
-    DISK_LETTER_MOCK="W:"
-    
-# Default editor is  "notepad++"
-if os.environ.get('WINDOWS_EDITOR'):
-    EDITOR=os.environ.get('WINDOWS_EDITOR')
-else:    
-    EDITOR="notepad++"
-
-if EDITOR == "notepad++":
-    LN_NUM_FORMAT=" -n"
-else:    # Linux default, mainly for vscode
-    LN_NUM_FORMAT=":"
-
-# Default path for Windows, option to keep Linux
-if os.environ.get('FS_PATH_TYPE'):
-    PATH_TYPE=os.environ.get('FS_PATH_TYPE')
-else:
-    PATH_TYPE="WINDOWS"
-
-
+DISK_LETTER_NORMAL = os.environ.get('WINDOWS_DISK', "U:")
+DISK_LETTER_MOCK = os.environ.get('WINDOWS_DISK', "W:")
+EDITOR = os.environ.get('WINDOWS_EDITOR', "notepad++")
+LN_NUM_FORMAT = " -n" if EDITOR == "notepad++" else ":"
+PATH_TYPE = os.environ.get('FS_PATH_TYPE', "WINDOWS")
+disk_home_src = os.environ.get('DISK_HOME', os.environ.get('HOME'))
 
 FS_EXCLUDE_DIRS="-name .svn -o -name AppLibs -o -path ./BSEAV/bin -o -path ./out -o -name .git -o -name .repo -o -name objs"
 EXCLUDE_FILES="--exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --exclude='ctags.tmp' --exclude='GPATH' --exclude='GRTAGS' --exclude='GTAGS' --exclude='gtags.conf' --exclude='tags'"
@@ -110,28 +86,19 @@ def genFsCmdFile(pattern, *options):
     
     # Get options from OS: fst(file_type), fsd(md) and fsopt(extra_opt)
     fsType = os.environ.get('fst')
-    if fsType == "c":
-        # file_type="-regex '.*cp*$'"
-        file_type="-type f -name '*.[c\|cc\|cpp]'"
-    elif fsType == "h":
-        file_type="-type f -name '*.[h\|hh]'"
-    elif (fsType == "ch") | (fsType == "hc") :
-        file_type="-type f -name '*.[c\|cc\|cpp\|h\|hh]'"
-    elif (fsType == "m")  | (fsType == "makefile")  | (fsType == "Makefile"):  # Search for Makefiles: *.mak, makefile, Makefile, *.mk, *.in
-        file_type="-type f \( -name '*.mak' -o -name makefile -o -name Makefile -o -name '*.mk' -o -name '*.in' \)"
-    elif (fsType == "j") | (fsType == "java"): # Search for Java
-        file_type="-type f -name '*.java'"
-    elif fsType:
-        # Use this to assign multiple file type: fst='*.java -o -name *.h'
-        file_type="-type f \( -name " + fsType + " \)"
-    else:
-        file_type="-type f"
+    file_types = {
+        "c":        "-type f -name '*.[c|cc|cpp]'",
+        "h":        "-type f -name '*.[h|hh]'",
+        "ch":       "-type f -name '*.[c|cc|cpp|h|hh]'",
+        "hc":       "-type f -name '*.[c|cc|cpp|h|hh]'",
+        "m":        "-type f \\( -name '*.mak' -o -name makefile -o -name Makefile -o -name '*.mk' -o -name '*.in' \\)",
+        "makefile": "-type f \\( -name '*.mak' -o -name makefile -o -name Makefile -o -name '*.mk' -o -name '*.in' \\)",
+        "j":        "-type f -name '*.java'",
+        "java":     "-type f -name '*.java'"
+    }
+    file_type = file_types.get(fsType, f"-type f ( -name {fsType} )" if fsType else "-type f")
 
-    fsDepth = os.environ.get('fsd')
-    if fsDepth:
-        md=int(fsDepth)
-    else:
-        md=9999
+    md = os.environ.get('fsd', "9999")
 
     # Then check if searching path is assigned
     # NOTE: Put a 'smart' check on the path: first check if it's a relative path, otherwise treat it as a absolute path.
@@ -208,7 +175,7 @@ def genFsCmdFile(pattern, *options):
     
     # The path under DISK_LETTER which we'll use in DOS 
     if PATH_TYPE == "WINDOWS":
-        path_under_disk = DISK_ROOT + os.getcwd().replace(os.environ.get('HOME'), D_HOME)
+        path_under_disk = DISK_ROOT + os.getcwd().replace(disk_home_src, D_HOME)
     else:
         path_under_disk = ""
     
@@ -279,11 +246,11 @@ def genFfCmdFile(pattern, *options):
     convertToDos = 0
     ffType = os.environ.get('fft')
     if ffType == "ll":
-        post_op = "-exec ls -ald --color {} \; "
+        post_op = "-exec ls -ald --color {} \\; "
     elif ffType == "ls":
-        post_op = "-exec ls -ad --color  {} \; "
+        post_op = "-exec ls -ad --color  {} \\; "
     elif ffType == "rm":
-        post_op = "-exec /bin/rm -vrf {} \; "
+        post_op = "-exec /bin/rm -vrf {} \\; "
     else:
         #default to use "dos" type
         post_op="-print"
@@ -343,7 +310,7 @@ def genFfCmdFile(pattern, *options):
     cmd_find = sudo_cmd + ' find ' + spath + ' -maxdepth ' + str(md) + ' -type d \\( ' + FF_EXCLUDE_DIRS + ' \\) -prune -o ' +  nameType + ' "' + filename + '" ' + post_op
 
     # The path under DISK_LETTER which we'll use in DOS 
-    path_under_disk = DISK_ROOT + os.getcwd().replace(os.environ.get('HOME'), D_HOME)
+    path_under_disk = DISK_ROOT + os.getcwd().replace(disk_home_src, D_HOME)
     
     awk_opt  = "-F':' "
     awk_opt += ' -v editor="' + EDITOR + '"'
@@ -416,7 +383,7 @@ def main(argv):
     elif argv[1] == "ff":
         ff (argv[2:])
     else:
-        print "Wrong usage! currently supported command: 'fs' and 'ff'"
+        print(f"Wrong usage! currently supported command: 'fs' and 'ff'")
 
 
 if __name__ == "__main__":

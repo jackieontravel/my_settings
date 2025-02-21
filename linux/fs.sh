@@ -1,7 +1,7 @@
 #!/bin/sh
 
-export FS_REL_VER="v3.6.1"
-export FS_REL_DATE="2021/1/11"
+export FS_REL_VER="v4.0.0"
+export FS_REL_DATE="2025/2/21"
 #############################################################################
 ### Revison History
 ###	2021/1/11   v3.6.1
@@ -35,6 +35,9 @@ export FS_REL_DATE="2021/1/11"
 ###	    [change] ffrm now confirms before really removes
 ###	    [change] Add color display to 'ffll' results.
 ###	    [code] Code refactoring for 'ff'
+###	2025/2/21  v4.0.0
+###	    [change] Change Python script from 2.7 to 3
+###	    [code] Code refactoring for 'User-specific variables' session by using advanced Python syntax
 ################################################################################
 
 
@@ -382,6 +385,7 @@ fs4linux()
     export WINDOWS_DISK="."
     export WINDOWS_EDITOR=" "    
     export FS_PATH_TYPE="LINUX"
+    export DISK_HOME=""
 
     echo "Run fs/ff and keep Linux path, don't convert to Windows path."
 }
@@ -391,8 +395,20 @@ fs4windows()
     export WINDOWS_DISK=
     export WINDOWS_EDITOR=  
     export FS_PATH_TYPE=
+    export DISK_HOME=""
 
     echo "Run fs/ff for Windows (do path conversion)"
+}
+
+
+fs4public()
+{
+    export WINDOWS_DISK="P:"
+    export WINDOWS_EDITOR=  
+    export FS_PATH_TYPE=
+    export DISK_HOME="/home/public"
+
+    echo "Run fs/ff under /home/public for Windows (do path conversion)"
 }
 
 

@@ -23,7 +23,8 @@ alias hh='function __hh() { history ${1:-50}; }; __hh '
 alias ll='/bin/ls -Al --color=always'
 alias llc='/bin/ls -l --color=always'    #ll with 'Clean' view
 alias lll='/bin/ls -l --color=always'    #lll is more easy to type
-alias llsort='/bin/ls -l --color=always --sort=time'    #lll is more easy to type
+alias llsort='/bin/ls -l --color=always --sort=time'    #sort on time: postive order. add "|more" to see in pages
+alias llsortr='/bin/ls -l --color=always --sort=time -r'    #sort on time: reverse order. add "|more" to see in pages
 alias ls='/bin/ls -A --color=always'
 alias lsc='/bin/ls --color=always'
 alias lls='/bin/ls --color=always'
@@ -32,6 +33,13 @@ alias la='/bin/ls -al --color=always'
 alias md='mkdir'
 alias mkcd='function __mkcd() { mkdir $1 && cd $1; }; __mkcd $1'
 alias grep='grep --color' # in case grep w/o color is needed. use 'grep --color=never'
+# Find the latest files, default 10 files -- can be set to new number
+function llnew() 
+{ 
+    find . -type f -printf '%T@ %TY/%Tm/%Td %TH:%TM:%.2TS %p\n' | sort -k 1nr | cut -d' ' -f 2- | head -n ${1:-10} 
+}
+
+
 # Apply colordiff if the system installed it
 if [ -x "`which colordiff 2>/dev/null`" ]; then
     alias diff=colordiff
@@ -48,20 +56,123 @@ else
     alias pl='less'
 fi
 alias mkctags='time ctags --extra=f --links=no --verbose -R . '
-alias mkgtags='time gtags --skip-unreadable  --verbose '
-function mkgtags_nolink()
+
+#########################################################################
+#   gtags
+#########################################################################
+# mkgtags: defauot to skip unreadable and symlink
+function mkgtags()
 {
-    # $1 to set manually excluded folders seperated by comma (,) 
-    linkFolders=$(find -type l -xtype d 2>/dev/null | awk '{ p=substr($0,2); gsub("/","\\/",p ); printf ( "%s\\/,", p)}')
-    sed "s/:skip=/:skip=$1,$linkFolders/g" /etc/gtags.conf > gtags.conf;
-    mkgtags
+    if [ -f ./GTAGS.CONF ]; then
+        local GCONF=./GTAGS.CONF
+    elif [ -f $HOME/.globalrc ]; then
+        local GCONF=$HOME/.globalrc
+    else
+        echo "* ERROR: user-defined configuration file not found"
+        echo "* NEXT:"
+        echo "    wget https://raw.githubusercontent.com/namhyung/global/master/gtags.conf -O $HOME/.globalrc"
+        echo "    sed 's/:skip=/:skip=.svn\/,/g' -i $HOME/.globalrc"
+        return -1
+    fi
+    
+    echo "gtags --config=skip --gtagsconf $GCONF"
+    gtags --config=skip --gtagsconf $GCONF
+    echo
+    sleep 1
+    time gtags --skip-unreadable --skip-symlink --verbose --gtagsconf $GCONF $*
 }
-alias mkgtags_sdk2='mkgtags_nolink "kernel3-KERNEL_ML_3.4.*"'
-alias mkgtags_android='mkgtags_nolink'
-alias updgtags='time global -u' # To update gtags
+
+# arguments ($1, $2, ...) are the dir's w/ or w/o trailing "/", will be skipped
+# You may add "-i" to do a incremental update
+function mkgtags_skipdirs()
+{
+    # REF: $HOME/.globalrc coming from https://raw.githubusercontent.com/namhyung/global/master/gtags.conf
+    #      Then add ".svn/"
+    local GCONF=$HOME/.globalrc
+    local dirs=""
+    local IncUpdate=""
+    
+    for dir in "$@"
+    do
+        if [ "$dir" = "-i" ]; then
+            IncUpdate="-i"
+        else
+            # Make sure trailing "/" is not included in case user input add it
+            dir_noTraSlh=${dir%/}
+            
+            # Convert each "/" into "\/" to meet sed rule. This is necessary if dir has more than one level
+            dir_sed=$(echo "$dir_noTraSlh" | awk '{ p=$0; gsub("/","\\/",p ); printf ( "%s", p)}')
+            # Add trailing "/" as this will indicate it's a dir actually
+            dirs+="${dir_sed}\/,"
+        fi
+    done
+    
+    sed "s/:skip=/:skip=${dirs}/g" $GCONF > GTAGS.CONF;
+    mkgtags $IncUpdate
+}
+
+
+# mkgtags_bsp4 ...... Create GTAGS for bsp4
+# mkgtags_bsp4 -i ... Update GTAGS for bsp4
+function mkgtags_bsp4()
+{
+    mkgtags_skipdirs build_dir $*
+}
+
+# Don't use updgtags as it will 
+# alias updgtags='time global -u' # To update gtags
 
 # A handly alias to show timeout on Linux ping. REF: http://superuser.com/questions/270083/linux-ping-show-time-out
-alias pingt='__pingt() { s=0; while :; do s=$(($s+1)); result=$(ping $1 -c1 -W1 |/bin/grep from) && echo "$result, seq=$s" && sleep 1 || echo timeout; done }; __pingt $1'
+# 2025/1/23 Improved by chatting with GPT: https://chatgpt.com/share/6791bad0-2494-8000-9266-7ec967ac52d9
+function pingt() {
+    local ip=$1
+    local s=0 p=0 f=0
+    local start_time end_time elapsed_time sleep_time result timestamp
+    
+    if [[ -z "$ip" ]]; then
+        echo "Usage: pingt <IP_ADDRESS>"
+        return 1
+    fi
+
+    while :; do
+        s=$((s + 1))
+        start_time=$(awk '{print $1}' /proc/uptime)
+        
+        timestamp=$(date '+%Y/%m/%d %H:%M:%S')
+        
+        if result=$(ping "$ip" -c1 -W1 2>&1 | /bin/grep from); then
+            p=$((p + 1))
+            echo "$timestamp - $result, seq=$s, P=$p, F=$f"
+            sleep_time=1  # Success case always sleeps 1 second
+        else
+            f=$((f + 1))
+            echo "$timestamp - timeout seq=$s, P=$p, F=$f"
+            end_time=$(awk '{print $1}' /proc/uptime)
+            elapsed_time=$(awk -v start="$start_time" -v end="$end_time" 'BEGIN {print end - start}')
+            sleep_time=$(awk -v elapsed="$elapsed_time" 'BEGIN {sleep = 1 - elapsed; if (sleep > 0) print sleep; else print 0}')
+        fi
+        
+        sleep "$sleep_time"
+    done
+}
+
+# friendly tree: tt
+function tt()
+{
+    # Always put "-L 1" as the first argument, so that it would be the default level, 
+    # could be overriden by user input -L <L> or -R
+    echo $* | grep -e '\-L' -e '\-R' > /dev/null 2>/dev/null
+    
+    if [ "$?" == "0" ]; then
+        user_option="$*"
+    else
+        user_option="-L 1 $*"
+    fi
+
+    # tree: dd "-C" to always show colors. 
+    # less: "-X" to keep output after quit from less, "-F":--quit-if-one-screen, "-P" to show hint.
+    tree $user_option -C | less -X -F -P"tree $user_option  => lines %lt-%lb?L/%L. (less\: press h for help or q to quit) "
+}
 
 ### A handy python function to return relative path
 ### Usage: relpath <dst> <src>
@@ -95,7 +206,7 @@ function schelp()
 {
     echo "sc <session name> ---- create a new session w/ name: <session name>"
     echo "scls ----------------- list existing sessions"
-    echo "scd  ----------------- deattach from current session"
+    echo "scd ------------------ deattach from current session"
     echo "scr <session name> --- re-attach to <session name>"
     echo "scrm <session name> -- remove <session name>, then list existing session"
 }
@@ -103,7 +214,7 @@ function schelp()
 alias scls='screen -ls'
 
 # deattach from current session
-alias scd='screen -d'
+alias scd='screen -d "$STY"'
 
 # re-attach, name: $1
 function scr()
@@ -691,6 +802,11 @@ function listcolor2()
 }
 
 alias listcolor='listcolor1; listcolor2'
+
+# Simple PS1 and PS1 reset:
+ORG_PS1=$PS1
+alias ps1='export PS1="\[\e[34;1m\][\$(basename \$(dirname \$(pwd)))/\$(basename \$(pwd))]\$ \[\e[0m\]"'
+alias ps1reset='export PS1="$ORG_PS1"'
 ####################################################################################################
 # Usage:
 #   Show color code:    echo $Red
@@ -711,3 +827,42 @@ opath ()
     echo $PATH
 }
 
+csv2redmine()
+{
+    TMPF=`mktemp`
+    cp $1 $TMPF -f
+    echo >> $TMPF
+    sed -i 's/^/|/g' $TMPF
+    sed -i ':a;N;$!ba;s/\r\n/|\r\n/g' $TMPF
+    sed -i 's/,/|/g' $TMPF
+    head -n -1 $TMPF
+    rm -f $TMPF
+}
+
+
+#2024/4/12 For Sheldon battery analyzer
+# set FR and FD accordingly.
+# Assume F is already *.txt, like "syslog.txt"
+# Export FR to be syslog.report
+# Export FD to be syslog.detail
+setf () 
+{ 
+    if [ -z "$F" ]; then
+        echo "Error: syslog filename \$F is missing.";
+        return 1;
+    fi;
+    if [[ "$F" =~ \.txt$ ]]; then
+        report_name="${F%.txt}";
+        FR="${report_name}.report";
+        FD="${report_name}.detail";
+        FO="${report_name}.offline";
+        echo "Done:";
+        echo " F=$F";
+        echo "FR=$FR";
+        echo "FD=$FD";
+        echo "FO=$FO";
+    else
+        echo "Error: Input is not in the expected format (*.txt).";
+        return 1;
+    fi
+}
