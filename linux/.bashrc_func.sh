@@ -33,6 +33,7 @@ alias la='/bin/ls -al --color=always'
 alias md='mkdir'
 alias mkcd='function __mkcd() { mkdir $1 && cd $1; }; __mkcd $1'
 alias grep='grep --color' # in case grep w/o color is needed. use 'grep --color=never'
+alias lx='less --quit-if-one-screen -X'     # Present a smart less
 # Find the latest files, default 10 files -- can be set to new number
 # NOTE: exclude files by SVN, GIT or others which store at .repo
 llnew() {
