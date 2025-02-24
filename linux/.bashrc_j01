@@ -1,0 +1,79 @@
+# .bashrc for jenkins01 (j01)
+##############################################
+# History
+# 2014/6/3     - Derived from Leopard (172.21.8.173)
+# 2015/11/16   - Put aliases and function definitions to .bashrc_func.sh, this makes .bashrc cleaner.
+# 2025/2/19    - Derived from Turtle (10.10.10.9), prepare for j01 
+##############################################
+
+# Add path to the end of $PATH
+# Features: - check first, add only if not existed. Therefore .bashrc can run multiple times
+function add_path_to_end()
+{
+    if [ -n "$1" ]; then
+        [[ ":$PATH:" != *":$1:"* ]] && export PATH="$PATH:$1"
+    fi
+}
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+	. /etc/bashrc
+fi
+
+########################################################################
+### Work-around for bash 4.2.x TAB for variable expansion  bug. 
+###     See: http://askubuntu.com/questions/41891/bash-auto-complete-for-environment-variables
+########################################################################
+if ((BASH_VERSINFO[0] >= 4)) && ((BASH_VERSINFO[1] >= 2))
+    then shopt -s direxpand
+fi
+
+### Allow less to open a compressed file (.tgz, .tar.gz, .zip, ...) ############################
+grep 'Fedora' /etc/issue > /dev/null
+if [ $? == 0 ]; then
+    export LESSOPEN="|/usr/bin/lesspipe.sh %s"
+else
+    # mostly for Ubuntu
+    export LESSOPEN="|/usr/bin/lesspipe %s"
+fi
+# To keep ANSI color code in less, and set TAB width to 4
+export LESS="-R -x4"
+
+
+## set svn editor #######################################################
+export SVN_EDITOR=vi
+
+# set prompt to green color
+#export PS1="\[\e[32;1m\][\u@\H \W]\$ \[\e[0m\]" 
+## with full pwd -- j01: Change color to gree for j01
+export PS1="\[\e[32;1m\][\! \D{%m/%d %T} \u@\H \w]\n\$ \[\e[0m\]" 
+
+#set history time format
+export HISTTIMEFORMAT='%m/%d %T '
+
+# Always add '.' as the first PATH
+[[ ":$PATH:" != *":.:"* ]] && export PATH=".:$PATH"
+
+# Add other path to the end:
+add_path_to_end /sbin
+add_path_to_end /usr/local/sbin
+# j01: forbid for now
+add_path_to_end $HOME/tools
+
+########################################################################
+### Supporting scripts
+########################################################################
+
+# Common for .bashrc: bash common fliases/functions:
+source $HOME/.bashrc_func.sh
+
+# Common for .bashrc: fs/ff tools:
+source $HOME/tools/fs.sh
+if [ "$TERM_PROGRAM" == "vscode" ]; then 
+   fs4linux
+fi
+
+# Set locale to UTF-8 as the system locale is set to lzh_TW. This will let 'ls' to show 'Feb' instead of '¤G'
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
