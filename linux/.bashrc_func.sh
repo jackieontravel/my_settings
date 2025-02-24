@@ -34,9 +34,11 @@ alias md='mkdir'
 alias mkcd='function __mkcd() { mkdir $1 && cd $1; }; __mkcd $1'
 alias grep='grep --color' # in case grep w/o color is needed. use 'grep --color=never'
 # Find the latest files, default 10 files -- can be set to new number
-function llnew() 
-{ 
-    find . -type f -printf '%T@ %TY/%Tm/%Td %TH:%TM:%.2TS %p\n' | sort -k 1nr | cut -d' ' -f 2- | head -n ${1:-10} 
+# NOTE: exclude files by SVN, GIT or others which store at .repo
+llnew() {
+    find . \( -name '.git*'  -o -name .svn -o -name .repo \) -prune -o -type f \
+    -printf '%T@ %TY/%Tm/%Td %TH:%TM:%.2TS %p\n' | \
+    sort -k 1nr | cut -d' ' -f 2- | head -n ${1:-10}
 }
 
 
