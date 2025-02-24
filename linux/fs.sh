@@ -1,7 +1,7 @@
 #!/bin/sh
 
-export FS_REL_VER="v4.0.0"
-export FS_REL_DATE="2025/2/21"
+export FS_REL_VER="v4.1.0"
+export FS_REL_DATE="2025/2/24"
 #############################################################################
 ### Revison History
 ###	2021/1/11   v3.6.1
@@ -38,6 +38,8 @@ export FS_REL_DATE="2025/2/21"
 ###	2025/2/21  v4.0.0
 ###	    [change] Change Python script from 2.7 to 3
 ###	    [code] Code refactoring for 'User-specific variables' session by using advanced Python syntax
+###	2025/2/24  v4.1.0
+###	    [bugfix] Resolve 'sudo' issue so that 'ff' can work in j01
 ################################################################################
 
 

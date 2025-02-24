@@ -4,6 +4,7 @@
 import os
 import sys
 import io
+import grp
 from subprocess import Popen, PIPE
 
 #### User-specific variables, change to meet actual situations  ##############
@@ -30,8 +31,6 @@ FS_REL_DATE=os.environ.get('FS_REL_DATE')
 NPROC=2
 FS_CMD_FILE=os.environ.get('FS_CMD_FILE')
 FF_CMD_FILE=os.environ.get('FF_CMD_FILE')
-NOT_IN_MOCK=0
-sudo_cmd=""
 DISK_ROOT=""
 D_HOME=""
 DISK_LETTER=""
@@ -39,18 +38,15 @@ DISK_LETTER=""
 
 # Check if we are in Mock. original Linux command:
 # REF: http://stackoverflow.com/questions/75182/detecting-a-chroot-jail-from-within
-### export NOT_IN_MOCK=$(mount |grep chroot>/dev/null; echo $?)
 def checkIfRunningInMock():
-    global NOT_IN_MOCK, sudo_cmd, DISK_ROOT, D_HOME, DISK_LETTER
+    global DISK_ROOT, D_HOME, DISK_LETTER
 
     p1 = Popen(["mount"], stdout=PIPE)
     p2 = Popen(["grep", "chroot"], stdin=p1.stdout, stdout=PIPE)
     output = p2.communicate()[0]
     if output:
-        NOT_IN_MOCK = 0
         # setup other parameters under Mock
         DISK_LETTER = DISK_LETTER_MOCK
-        sudo_cmd=""
         if os.path.isfile("/builddir/.mock_name"):
             f=open("/builddir/.mock_name")
             MOCK_PREFIX=f.read().replace("\n", "")
@@ -60,17 +56,14 @@ def checkIfRunningInMock():
             DISK_ROOT="Please get /builddir/.mock_name from external"
         D_HOME=os.environ.get('HOME')
     else:
-        NOT_IN_MOCK = 1
         # setup other parameters in normal environment
         DISK_LETTER = DISK_LETTER_NORMAL
-        sudo_cmd="sudo"
         DISK_ROOT=""
         D_HOME=""
 
 
 # Generate command file of fs which is then to be executed by shell.
 def genFsCmdFile(pattern, *options):
-    global NOT_IN_MOCK, sudo_cmd
 
     print ( "fs %s (%s) - Find strings by Python pre-processing. Use 'fshelp' to check the usage ('fs4linux' to keep Linux path).\n" % (FS_REL_VER, FS_REL_DATE ))
 
@@ -236,11 +229,11 @@ def genFfCmdFile(pattern, *options):
 
     print ( "ff %s (%s) - Find files by Python pre-processing. Use 'ffhelp' to check the usage ('fs4linux' to keep Linux path).\n" % (FS_REL_VER, FS_REL_DATE ))
 
-    # If we are in mock, sudo is not necessary.
-    if NOT_IN_MOCK == 1:
-        sudo_cmd="sudo"
-    else:
-        sudo_cmd=""
+    # Get the user's groups
+    user_groups = [grp.getgrgid(gid).gr_name for gid in os.getgroups()]
+
+    # Set sudo_cmd only if in 'sudo' group
+    sudo_cmd = "sudo" if "sudo" in user_groups else ""
 
     # Get options from OS: fft(ff_type)
     convertToDos = 0
@@ -383,7 +376,7 @@ def main(argv):
     elif argv[1] == "ff":
         ff (argv[2:])
     else:
-        print(f"Wrong usage! currently supported command: 'fs' and 'ff'")
+        print( "Wrong usage! currently supported command: 'fs' and 'ff'")
 
 
 if __name__ == "__main__":
