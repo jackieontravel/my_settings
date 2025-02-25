@@ -48,20 +48,14 @@ if [ -x "`which colordiff 2>/dev/null`" ]; then
 fi
 # Apply pygmentize if the system installed it. pl: pygmentize-less, it works for normal command and pipe
 if [ -x "`which pygmentize 2>/dev/null`" ]; then
-    function pless()
-    {
-        pygmentize -g $* |less;
-    }
-    alias pl='pless'
-else
-    alias pl='less'
+    export LESSOPEN='|pygmentize -g %s'
 fi
 
 export LESS='--quit-if-one-screen -X -R --use-color -DNGk '
-# lx: Present regular 'less' with "$LESS" options exported
-# lxc: 'lx' with syntax color ( use "-g" option of pygmentize to guess)
+# lx:   'less' with syntax color ( use "-g" option of pygmentize to guess), and apply "$LESSOPEN"
+# lxx:  'less' with "$LESS", and ignore "$LESSOPEN" -- Looks like we don't need it, just keep for record
 alias lx='less'
-alias lxc='pl'
+alias lxx='less -L'
 
 alias mkctags='time ctags --extra=f --links=no --verbose -R . '
 
