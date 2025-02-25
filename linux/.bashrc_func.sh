@@ -47,8 +47,9 @@ if [ -x "`which colordiff 2>/dev/null`" ]; then
     alias diff=colordiff
 fi
 # Apply pygmentize if the system installed it. pl: pygmentize-less, it works for normal command and pipe
+#   "-f terminal256": Use 256-color terminal instead of default 'terminal' with ANSI colors
 if [ -x "`which pygmentize 2>/dev/null`" ]; then
-    export LESSOPEN='|pygmentize -g %s'
+    export LESSOPEN="|pygmentize -f terminal256 -g %s"
 fi
 
 export LESS='--quit-if-one-screen -X -R --use-color -DNGk '
