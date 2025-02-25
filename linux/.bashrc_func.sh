@@ -33,7 +33,6 @@ alias la='/bin/ls -al --color=always'
 alias md='mkdir'
 alias mkcd='function __mkcd() { mkdir $1 && cd $1; }; __mkcd $1'
 alias grep='grep --color' # in case grep w/o color is needed. use 'grep --color=never'
-alias lx='less --quit-if-one-screen -X'     # Present a smart less
 # Find the latest files, default 10 files -- can be set to new number
 # NOTE: exclude files by SVN, GIT or others which store at .repo
 llnew() {
@@ -48,16 +47,22 @@ if [ -x "`which colordiff 2>/dev/null`" ]; then
     alias diff=colordiff
 fi
 # Apply pygmentize if the system installed it. pl: pygmentize-less, it works for normal command and pipe
-# Set language: pl -l sh .bashrc
 if [ -x "`which pygmentize 2>/dev/null`" ]; then
-    function pl()
+    function pless()
     {
-        pygmentize -g -f 256 $* |less;
+        pygmentize -g $* |less;
     }
-    alias pless='pl'
+    alias pl='pless'
 else
     alias pl='less'
 fi
+
+export LESS='--quit-if-one-screen -X -R --use-color -DNGk '
+# lx: Present regular 'less' with "$LESS" options exported
+# lxc: 'lx' with syntax color ( use "-g" option of pygmentize to guess)
+alias lx='less'
+alias lxc='pl'
+
 alias mkctags='time ctags --extra=f --links=no --verbose -R . '
 
 #########################################################################
