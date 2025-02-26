@@ -59,6 +59,9 @@ if [ -x "`which pygmentize 2>/dev/null`" ]; then
 fi
 
 export LESS='--quit-if-one-screen -X -R --use-color -DNGk -x4'
+# NOTE: Set MANPAGER accordingly 1) in case we have newer less version that doesn't comply with the one in man
+#           2) Enjoy the fancy feature by $LESS in 'man'
+export MANPAGER="less $LESS"
 # lx:   'less' with syntax color ( use "-g" option of pygmentize to guess), and apply "$LESSOPEN"
 # lxx:  'less' with "$LESS", and ignore "$LESSOPEN" -- Looks like we don't need it, just keep for record
 alias lx='less'
