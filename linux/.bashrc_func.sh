@@ -49,10 +49,16 @@ fi
 # Apply pygmentize if the system installed it. pl: pygmentize-less, it works for normal command and pipe
 #   "-f terminal256": Use 256-color terminal instead of default 'terminal' with ANSI colors
 if [ -x "`which pygmentize 2>/dev/null`" ]; then
-    export LESSOPEN="|pygmentize -f terminal256 -g %s"
+    if [ -x $HOME/tools/256colors_j.pl ]; then
+        # Run terminal 256 colors with reversed order, so that we won't see unclear text (eg.: deep blue over black)
+        $HOME/tools/256colors_j.pl -r
+        export LESSOPEN="|pygmentize -f terminal256 -g %s"
+    else
+        export LESSOPEN="|pygmentize -f terminal -g %s"
+    fi
 fi
 
-export LESS='--quit-if-one-screen -X -R --use-color -DNGk '
+export LESS='--quit-if-one-screen -X -R --use-color -DNGk -x4'
 # lx:   'less' with syntax color ( use "-g" option of pygmentize to guess), and apply "$LESSOPEN"
 # lxx:  'less' with "$LESS", and ignore "$LESSOPEN" -- Looks like we don't need it, just keep for record
 alias lx='less'
