@@ -24,7 +24,8 @@ apply_settings() {
     # Carry on if not exist
     echo "Applying settings for $HOSTNAME..."
     cp $BASHRC ~/.bashrc -v
-    cp .bashrc_func.sh ~/.bashrc_func.sh -v
+    cp .bashrc_func.sh ~ -v
+    cp .bashrc_func_git.sh ~ -v
     cp 256colors_j.pl ~/tools -v
     
     echo -e "\n\nsource ~/.bashrc ..."
