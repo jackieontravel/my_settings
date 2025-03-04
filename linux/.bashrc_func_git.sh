@@ -159,13 +159,13 @@ gitconfiglocal() {
 
 
 #help: Set git config to apply "xavi" account: jackieyeh-xavi
-#cmd: git config user.name
+#cmd: git config user.name and otehrs
 gitconfig2xavi() {
-    local cmd="git config user.name jackieyeh-xavi"
+    local cmd="git config --local user.name jackieyeh-xavi"
     show_then_run_cmd "$cmd"
-    local cmd="git config user.email jackie_yeh@xavi.com.tw"
+    local cmd="git config --local user.email jackie_yeh@xavi.com.tw"
     show_then_run_cmd "$cmd"
-    local cmd="git config credential.username jackieyeh-xavi"
+    local cmd="git config --local credential.username jackieyeh-xavi"
     show_then_run_cmd "$cmd"
     local cmd="git config --local core.sshCommand \"ssh -i ~/.ssh/id_ed25519_jackieyeh-xavi\""
     show_then_run_cmd "$cmd"
@@ -173,13 +173,13 @@ gitconfig2xavi() {
 
 
 #help: Set git config to apply "gmail" account: jackieontravel
-#cmd: git config user.name
+#cmd: git config user.name and otehrs
 gitconfig2gmail() {
-    local cmd="git config user.name jackieontravel"
+    local cmd="git config --local user.name jackieontravel"
     show_then_run_cmd "$cmd"
-    local cmd="git config user.email jackieontravel@gmail.com"
+    local cmd="git config --local user.email jackieontravel@gmail.com"
     show_then_run_cmd "$cmd"
-    local cmd="git config credential.username jackieontravel"
+    local cmd="git config --local credential.username jackieontravel"
     show_then_run_cmd "$cmd"
     local cmd="git config --local core.sshCommand \"ssh -i ~/.ssh/id_ed25519_jackieontravel\""
     show_then_run_cmd "$cmd"
