@@ -33,32 +33,57 @@ show_then_run_cmd() {
 
 # githelp: Automatically list all git-related functions with descriptions "^#help: " and "^#cmd: "
 githelp() {
-    # Trick: for some reason, ${BASH_SOURCE[0]} can't return absolute path in Turtle (bash 5.0.17), so use a fixed path
     local script_file="$HOME/.bashrc_func_git.sh"
-    
-    awk '
-        /^#help:/ {                       # If line starts with "#help:"
-            gsub("^#help: ", "", $0);      # Remove "#help: " prefix
-            help_msg = help_msg ? help_msg " " $0 : $0;  # Append to help_msg
+    local search_func="$1"  # Capture search pattern
+
+    awk -v search_func="$search_func" '
+        BEGIN { 
+            ORS = "";  # Disable automatic newline
         }
-        /^#cmd:/ {                        # If line starts with "#cmd:"
-            gsub("^#cmd: ", "", $0);       # Remove "#cmd: " prefix
-            cmd_msg = cmd_msg ? cmd_msg " " $0 : $0;  # Append to cmd_msg
+
+        # Extract help message
+        /^#help:/ { 
+            gsub("^#help: ", "", $0); 
+            if (help_msg) 
+                help_msg = help_msg " " $0; 
+            else 
+                help_msg = $0; 
         }
-        /^[a-zA-Z0-9_]+ *\(\) *\{/ {      # Detect function definition
-            func_name = $1;                # Extract function name
-            gsub("\\(\\)", "", func_name); # Remove "()" if present
-            if (help_msg || cmd_msg) {     # Print if any message was stored
-                printf "%-20s %s\n", func_name, help_msg;
+
+        # Extract command message
+        /^#cmd:/ { 
+            gsub("^#cmd: ", "", $0); 
+            if (cmd_msg) 
+                cmd_msg = cmd_msg " " $0; 
+            else 
+                cmd_msg = $0; 
+        }
+
+        # Detect function definitions
+        /^[a-zA-Z_][a-zA-Z0-9_]* *\(\) *\{/ {  
+            func_name = $1;
+            gsub("\\(\\)", "", func_name);  # Remove "()"
+
+            # Create a temporary search pattern (preventing persistent modification)
+            temp_search = search_func;
+            gsub("\\*", ".*", temp_search);
+            gsub("\\?", ".", temp_search);
+
+            # Print help message if found
+            if ((help_msg || cmd_msg) && (!search_func || func_name ~ temp_search)) {  
+                printf "\033[1;32m%-20s\033[0m %s\n", func_name, help_msg;
                 if (cmd_msg) {
-                    printf "%-20s \033[33m%s\033[0m\n", "", cmd_msg;
+                    printf "  \033[33m%s\033[0m\n", cmd_msg;
                 }
-                help_msg = "";             # Reset help message
-                cmd_msg = "";              # Reset cmd message
             }
+
+            # Reset messages for next function
+            help_msg = "";
+            cmd_msg = "";
         }
-    ' "$script_file" | less
+    ' "$script_file" | less -R
 }
+
 
 #help: Get/set git alias
 #cmd: git config --global alias.$alias_name $alias_command
@@ -203,7 +228,7 @@ gitdiff() {
 
 
 #help: Show git logs in oneline with optimized format. use "-j" to exclude Jenkins
-#cmd: git log --oneline [-j] [--pretty] [[branch]/[commit]] ["<commit1>..<commit2>"]
+#cmd: git log --oneline [-j] [--name-status] [--pretty] [[branch]/[commit]] ["<commit1>..<commit2>"]
 gitlog() { 
     local num_logs=-15;
     local exclude_jenkins=0 author_pattern date_fmt display_fmt;

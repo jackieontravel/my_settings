@@ -823,6 +823,7 @@ alias listcolor='listcolor1; listcolor2'
 # Simple PS1 and PS1 reset:
 ORG_PS1=$PS1
 alias ps1='export PS1="\[\e[34;1m\][\$(basename \$(dirname \$(pwd)))/\$(basename \$(pwd))]\$ \[\e[0m\]"'
+alias ps1simple='export PS1="\[\e[34;1m\]\$ \[\e[0m\]"'
 alias ps1reset='export PS1="$ORG_PS1"'
 ####################################################################################################
 # Usage:

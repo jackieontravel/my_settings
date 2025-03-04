@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    echo -e "Error:\n  This script must be sourced, not executed." >&2
+    echo -e "Usage:\n  source $0" >&2
+    exit 1
+fi
+
+
 # Get the current hostname
 HOSTNAME=$(hostname)
 
@@ -36,10 +43,10 @@ apply_settings() {
     
     echo -e "\n\nsource ~/.bashrc ..."
     source ~/.bashrc
+    source ~/.bashrc_func_git.sh
     echo "DONE"
 }
 
-# Apply settings
 apply_settings
 
 echo "Settings applied successfully!"
