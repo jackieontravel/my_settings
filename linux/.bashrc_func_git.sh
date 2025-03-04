@@ -33,7 +33,8 @@ show_then_run_cmd() {
 
 # githelp: Automatically list all git-related functions with descriptions "^#help: " and "^#cmd: "
 githelp() {
-    local script_file="${BASH_SOURCE[0]}"
+    # Trick: for some reason, ${BASH_SOURCE[0]} can't return absolute path in Turtle (bash 5.0.17), so use a fixed path
+    local script_file="$HOME/.bashrc_func_git.sh"
     
     awk '
         /^#help:/ {                       # If line starts with "#help:"
@@ -122,13 +123,57 @@ gitbrsetups() {
 }
 
 
-
 #help: List git config
-#cmd: git config --list [--config]
+#cmd: git config --list [[--global]|[--local]]
 gitconfig() {
     local cmd="git config --list $*"
     show_then_run_cmd "$cmd"
 }
+
+
+#help: List git config: global
+#cmd: git config --list --global
+gitconfigglobal() {
+    local cmd="git config --list --global $*"
+    show_then_run_cmd "$cmd"
+}
+
+
+#help: List git config: local
+#cmd: git config --list --local
+gitconfiglocal() {
+    local cmd="git config --list --local $*"
+    show_then_run_cmd "$cmd"
+}
+
+
+#help: Set git config to apply "xavi" account: jackieyeh-xavi
+#cmd: git config user.name
+gitconfig2xavi() {
+    local cmd="git config user.name jackieyeh-xavi"
+    show_then_run_cmd "$cmd"
+    local cmd="git config user.email jackie_yeh@xavi.com.tw"
+    show_then_run_cmd "$cmd"
+    local cmd="git config credential.username jackieyeh-xavi"
+    show_then_run_cmd "$cmd"
+    local cmd="git config --local core.sshCommand \"ssh -i ~/.ssh/id_ed25519_jackieyeh-xavi\""
+    show_then_run_cmd "$cmd"
+}
+
+
+#help: Set git config to apply "gmail" account: jackieontravel
+#cmd: git config user.name
+gitconfig2gmail() {
+    local cmd="git config user.name jackieontravel"
+    show_then_run_cmd "$cmd"
+    local cmd="git config user.email jackieontravel@gmail.com"
+    show_then_run_cmd "$cmd"
+    local cmd="git config credential.username jackieontravel"
+    show_then_run_cmd "$cmd"
+    local cmd="git config --local core.sshCommand \"ssh -i ~/.ssh/id_ed25519_jackieontravel\""
+    show_then_run_cmd "$cmd"
+}
+
 
 #help: Show git logs in oneline with optimized format. use "-j" to exclude Jenkins
 #cmd: git log --oneline [-j] [--pretty] [[branch]/[commit]] ["<commit1>..<commit2>"]

@@ -8,7 +8,7 @@
 #   Classified Functions: 
 #   Specific tasks with multiple functions
 ########################################################################################################
-source .bashrc_func_git.sh
+source $HOME/.bashrc_func_git.sh
 
 ########################################################################################################
 #   Default Values: 
