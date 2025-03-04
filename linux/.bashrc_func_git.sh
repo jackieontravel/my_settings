@@ -94,6 +94,14 @@ gitbr() {
 }
 
 
+#help: git commit
+#cmd: git commit [-a] [--dry-run]
+gitcommit() {
+    local cmd="git commit $*"
+    show_then_run_cmd "$cmd"
+}
+
+
 #help: Delete git branch (default: -d, force: -D)
 #cmd: git branch [-d|-D] <branchname>
 gitbrdelete() {
@@ -186,6 +194,14 @@ gitconfig2gmail() {
 }
 
 
+#help: git diff 
+#cmd: git diff 
+gitdiff() {
+    local cmd="git diff $*"
+    show_then_run_cmd "$cmd"
+}
+
+
 #help: Show git logs in oneline with optimized format. use "-j" to exclude Jenkins
 #cmd: git log --oneline [-j] [--pretty] [[branch]/[commit]] ["<commit1>..<commit2>"]
 gitlog() { 
@@ -217,6 +233,22 @@ gitlog() {
 #cmd: git mv <oldname> <newname>
 gitmv() {
     local cmd="git mv $*"
+    show_then_run_cmd "$cmd"
+}
+
+
+#help: Push local HEAD to remote <repo> and optional <branch>
+#cmd: git push [<repo> [branch]]
+gitpush() {
+    local cmd="git push $*"
+    show_then_run_cmd "$cmd"
+}
+
+
+#help: Pull remote <repo> and optional <branch> to local HEAD
+#cmd: git pull [<repo> [branch]]
+gitpull() {
+    local cmd="git pull $*"
     show_then_run_cmd "$cmd"
 }
 
@@ -273,6 +305,54 @@ gitshow() {
 #cmd: git status
 gitst() {
     local cmd="git status $*"
+    show_then_run_cmd "$cmd"
+}
+
+
+#help: Stash all tracked files
+#cmd: git stash
+gitstash() {
+    local cmd="git stash $*"
+    show_then_run_cmd "$cmd"
+}
+
+
+#help: Stash all files including tracked and untracked files
+#cmd: git stash -u
+gitstashuntrack() {
+    local cmd="git stash -u $*"
+    show_then_run_cmd "$cmd"
+}
+
+
+#help: List all stashed changes
+#cmd: git stash list
+gitstashlist() {
+    local cmd="git stash list $*"
+    show_then_run_cmd "$cmd"
+}
+
+
+#help: Show specified stashed changes
+#cmd: git stash show [index]
+gitstashshow() {
+    local cmd="git stash show $*"
+    show_then_run_cmd "$cmd"
+}
+
+
+#help: Drop specified stashed changes: all modified files restored, added files removed.
+#cmd: git stash drop [index]
+gitstashdrop() {
+    local cmd="git stash drop $*"
+    show_then_run_cmd "$cmd"
+}
+
+
+#help: Clear all stashed changes: drop everything
+#cmd: git stash clear
+gitstashclear() {
+    local cmd="git stash clear $*"
     show_then_run_cmd "$cmd"
 }
 
