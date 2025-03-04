@@ -235,6 +235,14 @@ gitdiff() {
 }
 
 
+#help: Fetch remote <repo> and optional <branch>
+#cmd: git fetch [<repo> [branch]]
+gitfetch() {
+    local cmd="git fetch $*"
+    show_then_run_cmd "$cmd"
+}
+
+
 #help: Show git logs in oneline with optimized format. use "-j" to exclude Jenkins
 #cmd: git log --oneline [-j] [--name-status] [--pretty] [[branch]/[commit]] ["<commit1>..<commit2>"]
 gitlog() { 
