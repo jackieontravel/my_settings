@@ -317,6 +317,13 @@ gitremoterename() {
 }
 
 
+#help: Restore modified files
+#cmd: git restore [ . | <file> | --staged <file> ]
+gitrestore() {
+    local cmd="git restore $*"
+    show_then_run_cmd "$cmd"
+}
+
 
 #help: show git commit with file list
 #cmd: git show --name-status [commit]
