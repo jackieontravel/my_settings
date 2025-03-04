@@ -124,26 +124,37 @@ gitbrsetups() {
 
 
 #help: List git config
-#cmd: git config --list [[--global]|[--local]]
+#cmd: git config --list [[--global]|[--local]] [--edit] (overwrite --list)
 gitconfig() {
-    local cmd="git config --list $*"
+    local cmd
+    local args=();
+    
+    action='--list';
+    for arg in "$@";
+    do
+        if [ "$arg" == "--edit" ]; then
+            action='--edit';
+        else
+            args+=("$arg");
+        fi;
+    done;
+    
+    cmd="git config $action ${args[@]}"
     show_then_run_cmd "$cmd"
 }
 
 
 #help: List git config: global
-#cmd: git config --list --global
+#cmd: git config --list --global [--edit] (overwrite --list)
 gitconfigglobal() {
-    local cmd="git config --list --global $*"
-    show_then_run_cmd "$cmd"
+    gitconfig --global "$*"
 }
 
 
 #help: List git config: local
-#cmd: git config --list --local
+#cmd: git config --list --local [--edit] (overwrite --list)
 gitconfiglocal() {
-    local cmd="git config --list --local $*"
-    show_then_run_cmd "$cmd"
+    gitconfig --local "$*"
 }
 
 
