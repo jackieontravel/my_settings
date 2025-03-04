@@ -111,10 +111,18 @@ gitalias() {
     fi
 }
 
-#help: Show git branch in verbose
-#cmd: git branch -vv -a
+#help: Show git local and remote branch
+#cmd: git branch -a
 gitbr() {
-    local cmd="git branch -vv -a"
+    local cmd="git branch -a $*"
+    show_then_run_cmd "$cmd"
+}
+
+
+#help: Show git local and remote branch in verbose
+#cmd: git branch -a -vv 
+gitbrvv() {
+    local cmd="git branch -a -vv $*"
     show_then_run_cmd "$cmd"
 }
 
