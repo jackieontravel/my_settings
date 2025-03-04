@@ -43,7 +43,6 @@ apply_settings() {
     
     echo -e "\n\nsource ~/.bashrc ..."
     source ~/.bashrc
-    source ~/.bashrc_func_git.sh
     echo "DONE"
 }
 
