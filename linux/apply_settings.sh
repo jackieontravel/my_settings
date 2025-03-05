@@ -7,19 +7,22 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 fi
 
 
-# Get the current hostname
-HOSTNAME=$(hostname)
-
 # Function for settings based on hostname
 apply_settings() {
+    # Get the current hostname
+    HOSTNAME=$(hostname)
+
     case "$HOSTNAME" in
         j01)
+            WORKDIR=$HOME/github_jackieontravel/my_settings/linux
             BASHRC=.bashrc.j01
             ;;
         turtle)
+            WORKDIR=$HOME/github/my_settings/linux
             BASHRC=.bashrc.turtle
             ;;
         leopard)
+            WORKDIR=$HOME/github/my_settings/linux
             BASHRC=.bashrc.leopard
             ;;
         *)
@@ -31,15 +34,15 @@ apply_settings() {
     # Carry on if not exist
     echo "Applying settings for $HOSTNAME..."
     # bash functions:
-    cp $BASHRC ~/.bashrc -v
-    cp .bashrc_func.sh ~ -v
-    cp .bashrc_func_git.sh ~ -v
+    cp $WORKDIR/$BASHRC ~/.bashrc -v
+    cp $WORKDIR/.bashrc_func.sh ~ -v
+    cp $WORKDIR/.bashrc_func_git.sh ~ -v
     
     # Terminal 256 colors support (Jackie version)
-    cp 256colors_j.pl ~/tools -v
+    cp $WORKDIR/256colors_j.pl ~/tools -v
     
     # SSH key checksum tools
-    cp get_ssh_sum.sh ~/.ssh -v
+    cp $WORKDIR/get_ssh_sum.sh ~/.ssh -v
     
     echo -e "\n\nsource ~/.bashrc ..."
     source ~/.bashrc
