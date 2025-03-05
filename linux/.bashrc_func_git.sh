@@ -381,6 +381,14 @@ gitstashlist() {
 }
 
 
+#help: Pop from stash list and apply to working tree
+#cmd: git stash pop [index]
+gitstashpop() {
+    local cmd="git stash pop $*"
+    show_then_run_cmd "$cmd"
+}
+
+
 #help: Show specified stashed changes
 #cmd: git stash show [index]
 gitstashshow() {
