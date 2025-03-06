@@ -227,6 +227,23 @@ gitconfig2gmail() {
 }
 
 
+#help: Temporarily set user to "gmail" account: jackieontravel, useful fot 'git clone'
+#cmd: export GIT_SSH_COMMAND='ssh -i ~/.ssh/id_ed25519_jackieontravel'
+gittempuser2gmail() {
+    local cmd="export GIT_SSH_COMMAND='ssh -i ~/.ssh/id_ed25519_jackieontravel'"
+    show_then_run_cmd "$cmd"
+}
+
+
+#help: Temporarily set user to "xavi" account: jackieyeh-xavi, useful fot 'git clone'
+#cmd: export GIT_SSH_COMMAND='ssh -i ~/.ssh/id_ed25519_jackieyeh-xavi'
+gittempuser2xavi() {
+    local cmd="export GIT_SSH_COMMAND='ssh -i ~/.ssh/id_ed25519_jackieyeh-xavi'"
+    show_then_run_cmd "$cmd"
+}
+
+
+
 #help: git diff 
 #cmd: git diff 
 gitdiff() {
