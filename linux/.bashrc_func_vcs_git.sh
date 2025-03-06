@@ -433,7 +433,7 @@ gitstashclear() {
 #help: Show modified files in short format, and convert to DOS path for Windows editor
 #cmd: git status --short
 gitmod() {
-    vcsmod git status --short
+    vcsmod git status --short $*
 }
 
 #help: Show modified files in short format, and keep its path
