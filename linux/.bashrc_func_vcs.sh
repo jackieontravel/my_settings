@@ -96,38 +96,6 @@ vcsmodt()
         PROC_PROG=TortoiseGitProc.exe
     fi
     
-    # grep ':\\' "$vcsmod_output" | awk -v WINDOWS_DISK="$WINDOWS_DISK" -v prog="$PROC_PROG" '
-    # BEGIN {
-        # printf("\n\n%s /command:repostatus /path:\"", prog)
-        # unversioned_start = 0
-        # unversioned_count = 0
-    # }
-    # {
-        # if (match($1, WINDOWS_DISK)) 
-            # filename = $1
-        # else 
-            # filename = $2
-
-# printf("1: %s\n", $0)
-
-        # if (match($1, "Unversioned:")) 
-            # unversioned_start = 1
-            
-        # if (unversioned_start == 1)
-            # unversioned_count++
-
-        # if (NR == 1) 
-            # printf("%s", filename)
-        # else 
-            # printf("*%s", filename)
-    # }
-    # END {
-        # printf("\"\n\n\nTotal %d files\n", NR)
-        # if ( unversioned_count != 0 )
-            # printf("Unversioned files: %d\n", unversioned_count)
-    # }'
-
-    
     awk -v WINDOWS_DISK="$WINDOWS_DISK" -v prog="$PROC_PROG" '
     BEGIN {
         printf("\n\n%s /command:repostatus /path:\"", prog)
