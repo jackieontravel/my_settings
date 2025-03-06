@@ -36,7 +36,9 @@ apply_settings() {
     # bash functions:
     cp $WORKDIR/$BASHRC ~/.bashrc -v
     cp $WORKDIR/.bashrc_func.sh ~ -v
-    cp $WORKDIR/.bashrc_func_git.sh ~ -v
+    cp $WORKDIR/.bashrc_func_vcs.sh ~ -v
+    cp $WORKDIR/.bashrc_func_vcs_svn.sh ~ -v
+    cp $WORKDIR/.bashrc_func_vcs_git.sh ~ -v
     
     # Terminal 256 colors support (Jackie version)
     cp $WORKDIR/256colors_j.pl ~/tools -v

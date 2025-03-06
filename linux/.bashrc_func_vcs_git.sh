@@ -1,7 +1,8 @@
-# .bashrc_git_func.sh
+# .bashrc_func_vcs_git.sh
 ##############################################
 # History
-# 2025/2/27    - Initial release for .bashrc_git_func.sh, to support handy functions and aliases for git.
+# 2025/2/27     - Initial release for .bashrc_git_func.sh, to support handy functions and aliases for git.
+# 2025/3/6      - Rename to .bashrc_func_vcs_git.sh to be called by bashrc_func_vcs.sh
 ##############################################
 
 
@@ -33,7 +34,7 @@ show_then_run_cmd() {
 
 # githelp: Automatically list all git-related functions with descriptions "^#help: " and "^#cmd: "
 githelp() {
-    local script_file="$HOME/.bashrc_func_git.sh"
+    local script_file="$HOME/.bashrc_func_vcs_git.sh"
     local search_func="$1"  # Capture search pattern
 
     awk -v search_func="$search_func" '
@@ -60,7 +61,7 @@ githelp() {
         }
 
         # Detect function definitions
-        /^[a-zA-Z_][a-zA-Z0-9_]* *\(\) *\{/ {  
+        /^[a-zA-Z_][a-zA-Z0-9_]* *\(\)/ {  
             func_name = $1;
             gsub("\\(\\)", "", func_name);  # Remove "()"
 
@@ -428,5 +429,40 @@ gitstashclear() {
     local cmd="git stash clear $*"
     show_then_run_cmd "$cmd"
 }
+
+#help: Show modified files in short format, and convert to DOS path for Windows editor
+#cmd: git status --short
+gitmod() {
+    vcsmod git status --short
+}
+
+#help: Show modified files in short format, and keep its path
+#cmd: git status --short
+gitmodl() {
+### l stands for Linux format.
+### Use gitmodl to show modified file in Linux format, so that I can:
+###     - restore it individually with 'svn restore'
+###     - check diff with 'git diff'
+
+    local git_option="$*"
+    git status --short $svn_option | awk '{status=substr($0, 1, 2);
+                                    path=substr($0, 3);
+                                    printf("%s:\n%s\n",status,path)}'
+}
+
+
+#help: Generate a command to show modified file in TortoiseGit GUI. Good for small project, long tiime for large project
+#cmd: git status --short
+gitmodt() {
+    echo -e "!!! For TortoiseGit, this may a very very very long time for a big project, use gitmodd instead"
+    vcsmodt git $*
+}
+
+#help: Show modified files in short format, and convert to DOS path for Windows diff tool
+#cmd: git status --short
+gitmodd() {
+    vcsmodd git $*
+}
+
 
 
