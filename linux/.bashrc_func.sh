@@ -321,7 +321,11 @@ rmcolor()
 ##  SVN related functions
 ##
 ##############################################################################
-
+# svnmod: svn check for modification -- basic version
+# Updated at 2025/3/6:
+#   - List unversioned files as well
+#   - Allow to accept optional arguments -- can be called by noisvnmod
+# $1: svn options
 svnmod()
 {
     ### Original way with 'convertpath', now just keep it for reference.
@@ -334,32 +338,65 @@ svnmod()
         return;
     fi
     
+    local svn_option="$*"
+    
     echo -n "$HOME" | sed 's/\//\\\\/g' | awk '{ printf "s/%s//", $1} ' > ~/.sed_svnmod.cmd
-    svn status | grep ^[^?" "]| awk -v WINDOWS_DISK=$WINDOWS_DISK -v WINDOWS_EDITOR=$WINDOWS_EDITOR '{status=substr($0, 1, 1);
-                            path=root_path"/"substr($0, 9);
-                            gsub("/","\\",path );
-                            printf("%s:\n%s %s%s\n", status, WINDOWS_EDITOR, WINDOWS_DISK, path)}' root_path=`pwd` | sed -f ~/.sed_svnmod.cmd
+    
+    local versioned_output_file=~/.svnmod_versioned_file
+    local unversioned_output_file=~/.svnmod_unversioned_file
+    
+    rm -f $versioned_output_file
+    rm -f $unversioned_output_file
+    
+    while IFS= read -r line; do
+        status="${line:0:1}"
+        path="$PWD/${line:8}"
+        path_win=$(echo "$path" | sed 's/\//\\/g' | sed -f ~/.sed_svnmod.cmd)
+
+        if [[ "$status" == "?" ]]; then
+            echo "$WINDOWS_EDITOR $WINDOWS_DISK$path_win" >> $unversioned_output_file
+        else
+            echo "$status:" >> $versioned_output_file
+            echo "$WINDOWS_EDITOR $WINDOWS_DISK$path_win" >> $versioned_output_file
+        fi
+    done < <(svn status $svn_option)
+
+    # Print versioned files first
+    if [ -f "$versioned_output_file" ]; then
+        cat $versioned_output_file
+    fi
+
+    # Print unversioned files at the end
+    if [ -f "$unversioned_output_file" ]; then
+        echo -e "\n\nUnversioned:"
+        cat $unversioned_output_file
+    fi
 }
 
 
+# svnmodl: svn check for modification -- linux version: with linux path
 svnmodl()
 {
 ### l stands for Linux format.
 ### Use svnmodl to show modified file in Linux format, so that I can:
 ###     - revert it individually with 'svn revert'
 ###     - check diff with 'svn diff'
-svn status | grep ^[^?" "]| awk '{status=substr($0, 1, 1);
-                        path=substr($0, 9);
-                        printf("%s:\n%s\n",status,path)}'
+
+    local svn_option="$*"
+    svn status $svn_option | awk '{status=substr($0, 1, 1);
+                                    path=substr($0, 9);
+                                    printf("%s:\n%s\n",status,path)}'
 }
 
 
 
+# svnmodt: svn check for modification -- Tortoise version
 ## Generate a command to show modified file in Tortoise GUI. Notation: svnmod+t=svnmodt
 ## Tips: search ':\\' to be recoginzed as a Windows path
 svnmodt()
 {
-    svnmod |grep ':\\' | awk -v WINDOWS_DISK=$WINDOWS_DISK 'BEGIN{printf("\n\nTortoiseProc.exe /command:repostatus /path:\"")} {if (match($1, WINDOWS_DISK)) filename=$1; else filename=$2; if (NR==1) printf("%s",filename); else printf("*%s",filename)} END {printf("\"\n\n\nTotal %d files\n", NR)}'
+    local svn_option="$*"
+    svnmod $svn_option |grep ':\\' | awk -v WINDOWS_DISK=$WINDOWS_DISK 'BEGIN{printf("\n\nTortoiseProc.exe /command:repostatus /path:\"")} {if (match($1, WINDOWS_DISK)) filename=$1; else filename=$2; if (NR==1) printf("%s",filename); else printf("*%s",filename)} END {printf("\"\n\n\nTotal %d files\n", NR)}'
 }
 
 
@@ -368,21 +405,7 @@ svnmodt()
 #################################################################################
 noisvnmod()
 {
-    ### Original way with 'convertpath', now just keep it for reference.
-    #    /bin/echo "svn status | grep ^[^?] | awk '{if (\$2==\"+\") printf(\"%s:\n%s\n\",\$1,\$3); else  printf(\"%s:\n%s\n\",\$1,\$2)}' | convertpath"
-    #    svn status | grep ^[^?] | awk '{if ($2=="+") printf("%s:\n%s\n",$1,$3); else  printf("%s:\n%s\n",$1,$2)}'|convertpath
-    
-    ### New way without convertpath. Set WINDOWS_DISK to Windows drive, eg. L, V, z, ...
-    if [ -z "$WINDOWS_DISK" ]; then
-        echo "ERROR. Please set WINDOWS_DISK first... "
-        return;
-    fi
-    
-    echo -n "$HOME" | sed 's/\//\\\\/g' | awk '{ printf "s/%s//", $1} ' > ~/.sed_svnmod.cmd
-    svn status --no-ignore | grep ^[^?" "]| awk -v WINDOWS_DISK=$WINDOWS_DISK -v WINDOWS_EDITOR=$WINDOWS_EDITOR '{status=substr($0, 1, 1);
-                            path=root_path"/"substr($0, 9);
-                            gsub("/","\\",path );
-                            printf("%s:\n%s %s%s\n", status, WINDOWS_EDITOR, WINDOWS_DISK, path)}' root_path=`pwd` | sed -f ~/.sed_svnmod.cmd
+    svnmod --no-ignore
 }
 
 
@@ -392,9 +415,7 @@ noisvnmodl()
 ### Use svnmodl to show modified file in Linux format, so that I can:
 ###     - revert it individually with 'svn revert'
 ###     - check diff with 'svn diff'
-svn status --no-ignore | grep ^[^?" "]| awk '{status=substr($0, 1, 1);
-                        path=substr($0, 9);
-                        printf("%s:\n%s\n",status,path)}'
+    svnmodl --no-ignore
 }
 
 
@@ -403,7 +424,7 @@ svn status --no-ignore | grep ^[^?" "]| awk '{status=substr($0, 1, 1);
 ## Tips: search ':\\' to be recoginzed as a Windows path
 noisvnmodt()
 {
-    noisvnmod |grep ':\\' | awk -v WINDOWS_DISK=$WINDOWS_DISK 'BEGIN{printf("\n\nTortoiseProc.exe /command:repostatus /path:\"")} {if (match($1, WINDOWS_DISK)) filename=$1; else filename=$2; if (NR==1) printf("%s",filename); else printf("*%s",filename)} END {printf("\"\n\n\nTotal %d files\n", NR)}'
+    svnmodt --no-ignore
 }
 
 
