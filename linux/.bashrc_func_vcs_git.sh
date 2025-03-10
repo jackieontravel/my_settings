@@ -253,6 +253,25 @@ gitdiff() {
 }
 
 
+#help: Show command to open Windows diff tool. file2 is optional, default the base of file1.
+#cmd: gitdifft <file1> [<file2>]
+gitdifft() {
+    local file1="$1"
+    local file2="$2"
+    local file1_win file2_win path_opt path2_opt=""
+    
+    file1_win=$(lrpath2wapath $file1)
+    path_opt="/path:\"$file1_win\""
+
+    if [ -n "$file2" ]; then
+        file2_win=$(lrpath2wapath $file2)
+        path2_opt="/path2:\"$file2_win\""
+    fi
+    
+    echo "TortoiseGitProc.exe /command:diff $path_opt $path2_opt"
+}
+
+
 #help: Fetch remote <repo> and optional <branch>
 #cmd: git fetch [<repo> [branch]]
 gitfetch() {

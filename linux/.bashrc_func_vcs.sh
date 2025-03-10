@@ -7,6 +7,33 @@
 ########################################################################################################
 #   Common parts for vcs (Version Controlled Software): 
 ########################################################################################################
+# lapath2wapath: Convert a Linux-absolute path to Windows-absolute path
+# $1: a Linux-absolute path
+lapath2wapath()
+{
+    local TMP_FILE=~/.sed_svnmod.cmd
+    local lapath="$1"
+    
+    echo -n "$HOME" | sed 's/\//\\\\/g' | awk '{ printf "s/%s//", $1} ' > $TMP_FILE
+
+    local wapath=$(echo "$lapath" | sed 's/\//\\/g' | sed -f $TMP_FILE)
+    
+    echo "$WINDOWS_DISK$wapath"
+    
+    # Cleanup
+    rm -f $TMP_FILE
+
+}
+
+# lrpath2wapath: Convert a Linux-relative path to Windows-absolute path
+# $1: a Linux-relative path based on current $PWD
+lrpath2wapath()
+{
+    local lapath="$PWD/$1"
+    
+    lapath2wapath "$lapath"
+}
+
 # vcsmod: check for modification -- list for Windows editor
 vcsmod()
 {
@@ -24,8 +51,6 @@ vcsmod()
     
     local cmd="$*"
     
-    echo -n "$HOME" | sed 's/\//\\\\/g' | awk '{ printf "s/%s//", $1} ' > ~/.sed_svnmod.cmd
-    
     local versioned_output_file=~/.vcsmod_versioned_file
     local unversioned_output_file=~/.vcsmod_unversioned_file
     
@@ -36,19 +61,19 @@ vcsmod()
     while IFS= read -r line; do
         if [ "$1" == "svn" ]; then
             status="${line:0:1}"
-            path="$PWD/${line:8}"
+            path="${line:8}"
         else
             status="${line:0:2}"
-            path="$PWD/${line:3}"
+            path="${line:3}"
         fi
         
-        path_win=$(echo "$path" | sed 's/\//\\/g' | sed -f ~/.sed_svnmod.cmd)
+        path_win=$(lrpath2wapath $path)
 
         if [[ "${status:0:1}" == "?" ]]; then
-            echo "$WINDOWS_EDITOR $WINDOWS_DISK$path_win" >> $unversioned_output_file
+            echo "$WINDOWS_EDITOR $path_win" >> $unversioned_output_file
         else
             echo "$status:" >> $versioned_output_file
-            echo "$WINDOWS_EDITOR $WINDOWS_DISK$path_win" >> $versioned_output_file
+            echo "$WINDOWS_EDITOR $path_win" >> $versioned_output_file
         fi
     done < <($cmd)
 
