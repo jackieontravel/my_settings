@@ -10,7 +10,9 @@
 #   Default Values: 
 #   they are supposed to be set in the calling script (.bashrc), if not set, below are the default values
 ########################################################################################################
-
+# Basic colors
+cDEF='\e[0m'
+cBLUE='\e[34m'
 
 ########################################################################################################
 #   Handy aliases
@@ -20,15 +22,20 @@
 #########################################################################
 #   Functions
 #########################################################################
+# Show a command with predefined color
+# $1: command to be shown
+show_cmd() {
+    local cmd="$1"
+    echo -e "${cBLUE}$cmd${cDEF}"
+}
+
+
 # Show a command then run it
 # $1: command to be shown and run
 show_then_run_cmd() {
     local cmd="$1"
-    local cDEF='\e[0m'
-    local cBLUE='\e[34m'
     echo -e "${cBLUE}$cmd${cDEF}"
     eval "$cmd"
-    
 }
 
 
@@ -245,10 +252,18 @@ gittempuser2xavi() {
 
 
 
-#help: git diff 
-#cmd: git diff 
+#help: basic git diff 
+#cmd: git diff [file]
 gitdiff() {
     local cmd="git diff $*"
+    show_then_run_cmd "$cmd"
+}
+
+
+#help: git diff to check name-status
+#cmd: git diff --name-status [commit]|[<commit>..<commit>]|[<branch>...<branch>] (merge base)
+gitdiffnames() {
+    local cmd="git diff --name-status $*"
     show_then_run_cmd "$cmd"
 }
 
@@ -281,7 +296,7 @@ gitfetch() {
 
 
 #help: Show git logs in oneline with optimized format. use "-j" to exclude Jenkins
-#cmd: git log --oneline [-j] [--name-status] [--pretty] [[branch]/[commit]] ["<commit1>..<commit2>"]
+#cmd: git log --oneline --graph --decorate [-j] [--name-status] [--pretty] [[branch]/[commit]] ["<commit1>..<commit2>"]
 gitlog() { 
     local num_logs=-15;
     local exclude_jenkins=0 author_pattern date_fmt display_fmt;
@@ -303,7 +318,19 @@ gitlog() {
     done;
     date_fmt="format:%Y-%m-%d %H:%M:%S";
     display_fmt="%C(green)%h%C(reset) %C(cyan)%<(12,trunc)%an%C(reset) %C(yellow)%cd%C(reset)%C(magenta)%d%C(reset) %<(60,trunc)%s";
-    git log "$num_logs" --oneline --date="$date_fmt" --format="$display_fmt" --perl-regexp --author="$author_pattern" "${args[@]}"
+    
+    local cmd="git log --oneline --graph --decorate $num_logs --date=\"$date_fmt\" --format=\"$display_fmt\" --perl-regexp --author='"$author_pattern"' ${args[@]}"
+    show_then_run_cmd "$cmd"
+
+    # git log $basic_opt --date="$date_fmt" --format="$display_fmt" --perl-regexp --author="$author_pattern" "${args[@]}"
+}
+
+
+#help: Merge a branch into local active master
+#cmd: git merge <branch>
+gitmerge() {
+    local cmd="git merge $*"
+    show_then_run_cmd "$cmd"
 }
 
 
@@ -374,6 +401,34 @@ gitremoterename() {
 #cmd: git restore [ . | <file> | --staged <file> ]
 gitrestore() {
     local cmd="git restore $*"
+    show_then_run_cmd "$cmd"
+}
+
+
+#help: Reset current HEAD to the specified commit with --hard: clears staging and discards uncommitted files
+#cmd: git reset --hard <commit>
+gitresethard() {
+    local cmd="git reset --hard $*"
+
+    # Show the command to be executed
+    show_cmd "$cmd"
+
+    # Warn the user about data loss
+    echo "⚠ WARNING: This will reset your branch and discard all uncommitted changes!"
+    read -p "Are you sure? (y/N): " confirm
+
+    if [[ "$confirm" =~ ^[Yy]$ ]]; then
+        eval "$cmd"
+    else
+        echo "Operation canceled."
+    fi
+}
+
+
+#help: Reset current HEAD to the specified commit with --soft: don't clear staging and don't discard uncommitted files
+#cmd: git reset --soft <commit>
+gitresetsoft() {
+    local cmd="git reset --soft $*"
     show_then_run_cmd "$cmd"
 }
 
