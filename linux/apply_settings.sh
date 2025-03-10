@@ -6,9 +6,14 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     exit 1
 fi
 
+# Check for --init-func argument, this is assigned by .bashrc
+if [[ "$1" == "--init-func" ]]; then
+    init_func_only=1
+fi
 
-# Function for settings based on hostname
-apply_settings() {
+
+# Function to apply settings based on hostname
+do_apply_settings() {
     # Get the current hostname
     HOSTNAME=$(hostname)
 
@@ -46,11 +51,23 @@ apply_settings() {
     # SSH key checksum tools
     cp $WORKDIR/get_ssh_sum.sh ~/.ssh -v
     
+    # myself
+    cp $WORKDIR/apply_settings.sh ~/tools -v
+    
     echo -e "\n\nsource ~/.bashrc ..."
     source ~/.bashrc
     echo "DONE"
 }
 
-apply_settings
+# A run-time function for any session to apply the settings.
+apply_settings() {
+    cd $WORKDIR
+    do_apply_settings
+    cd -
+}
 
-echo "Settings applied successfully!"
+# Any time we can also source this file w/o any argument to apply settings.
+if [ -z "$init_func_only" ]; then
+    do_apply_settings
+    echo "Settings applied successfully!"
+fi

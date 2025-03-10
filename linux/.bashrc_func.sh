@@ -9,6 +9,7 @@
 #   Specific tasks with multiple functions
 ########################################################################################################
 source $HOME/.bashrc_func_vcs.sh
+source $HOME/tools/apply_settings.sh --init-func
 
 ########################################################################################################
 #   Default Values: 
