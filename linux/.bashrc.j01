@@ -81,3 +81,30 @@ export LC_ALL=en_US.UTF-8
 # Set windows disk to "J:" for j01
 export WINDOWS_DISK="J:"
 
+
+########################################################################
+### Specific functions only for j01
+########################################################################
+# scpt: scp to "T"urtle
+# NOTES: Currently (2025/3/11) is dedicated for ameba project, so always put to 
+#   jackieyeh@turtle:/home/jackieyeh/www/ameba
+scpt() {
+    local remote_dir="jackieyeh@turtle:/home/jackieyeh/www/ameba"
+    local identity_file="$HOME/.ssh/id_ed25519_jackieyeh-xavi"
+    
+    # Check if file argument is provided
+    if [[ -z "$1" ]]; then
+        echo "scpt: Use 'scp' to copy files to Turtle"
+        echo "Error: Missing file argument." >&2
+        echo "Usage: scpt <file>" >&2
+        return 1
+    fi
+
+    local file="$1"
+    local cmd="scp -i $identity_file $file $remote_dir"
+
+    echo "$cmd"
+    eval "$cmd"
+}
+
+
