@@ -1,10 +1,10 @@
 # .bashrc_func_vcs_git.sh
 ##############################################
 # History
-# 2025/2/27     - Initial release for .bashrc_git_func.sh, to support handy functions and aliases for git.
 # 2025/3/6      - Rename to .bashrc_func_vcs_git.sh to be called by bashrc_func_vcs.sh
+# 2025/2/27     - Initial release for .bashrc_git_func.sh, to support handy functions and aliases for git.
 ##############################################
-
+GIT_HELP_VERSION="V0.9 2025/3/11"
 
 ########################################################################################################
 #   Default Values: 
@@ -43,10 +43,12 @@ show_then_run_cmd() {
 githelp() {
     local script_file="$HOME/.bashrc_func_vcs_git.sh"
     local search_func="$1"  # Capture search pattern
-
-    awk -v search_func="$search_func" '
+    local help_sum=$(md5sum $script_file | awk '{print substr($1, length($1)-7)}')
+    
+    awk -v search_func="$search_func" -v help_sum="$help_sum" -v ver="$GIT_HELP_VERSION" '
         BEGIN { 
             ORS = "";  # Disable automatic newline
+            printf "githelp: %s (%s)\n", ver, help_sum
         }
 
         # Extract help message
@@ -296,33 +298,43 @@ gitfetch() {
 
 
 #help: Show git logs in oneline with optimized format. use "-j" to exclude Jenkins
-#cmd: git log --oneline --graph --decorate [-j] [--name-status] [--pretty] [[branch]/[commit]] ["<commit1>..<commit2>"]
+#cmd: git log --oneline --graph --decorate [-j] [--author=<author>] [--name-status] [--pretty] [[branch]/[commit]] ["<commit1>..<commit2>"]
 gitlog() { 
-    local num_logs=-15;
-    local exclude_jenkins=0 author_pattern date_fmt display_fmt;
-    local args=();
-    
-    author_pattern='';
-    for arg in "$@";
-    do
-        if [[ "$arg" == "--jj" || "$arg" == "-j" ]]; then
-            exclude_jenkins=1;
-            author_pattern='^((?!.*enkins).*)$';
-        else
-            if [[ "$arg" =~ ^-?[0-9]+$ ]]; then
-                num_logs="$arg";
-            else
-                args+=("$arg");
-            fi;
-        fi;
-    done;
-    date_fmt="format:%Y-%m-%d %H:%M:%S";
-    display_fmt="%C(green)%h%C(reset) %C(cyan)%<(12,trunc)%an%C(reset) %C(yellow)%cd%C(reset)%C(magenta)%d%C(reset) %<(60,trunc)%s";
-    
-    local cmd="git log --oneline --graph --decorate $num_logs --date=\"$date_fmt\" --format=\"$display_fmt\" --perl-regexp --author='"$author_pattern"' ${args[@]}"
-    show_then_run_cmd "$cmd"
+    local num_logs=-15
+    local exclude_jenkins=0 author_pattern="" date_fmt display_fmt user_author=""
+    local args=()
 
-    # git log $basic_opt --date="$date_fmt" --format="$display_fmt" --perl-regexp --author="$author_pattern" "${args[@]}"
+    for arg in "$@"; do
+        case "$arg" in
+            --author=*) 
+                user_author="${arg#--author=}"  # Extract author pattern
+                ;;
+            --jj | -j)
+                exclude_jenkins=1
+                author_pattern='^((?!.*enkins).*)$'
+                ;;
+            -[0-9]* | [0-9]*) 
+                num_logs="$arg"
+                ;;
+            *)
+                args+=("$arg")
+                ;;
+        esac
+    done
+
+    date_fmt="format:%Y-%m-%d %H:%M:%S"
+    display_fmt="%C(green)%h%C(reset) %C(cyan)%<(12,trunc)%an%C(reset) %C(yellow)%cd%C(reset)%C(magenta)%d%C(reset) %<(60,trunc)%s"
+
+    # Use user-provided --author if available; otherwise, apply the default (if -j is used)
+    local author_flag=""
+    if [[ -n "$user_author" ]]; then
+        author_flag="--author=\"$user_author\""
+    elif (( exclude_jenkins )); then
+        author_flag="--author='$author_pattern'"
+    fi
+
+    local cmd="git log --oneline --graph --decorate $num_logs --date=\"$date_fmt\" --format=\"$display_fmt\" --perl-regexp $author_flag ${args[*]}"
+    show_then_run_cmd "$cmd"
 }
 
 
