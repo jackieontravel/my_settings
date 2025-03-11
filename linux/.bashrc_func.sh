@@ -56,8 +56,11 @@ fi
 #   "-f terminal256": Use 256-color terminal instead of default 'terminal' with ANSI colors
 if [ -x "`which pygmentize 2>/dev/null`" ]; then
     if [ -x $HOME/tools/256colors_j.pl ]; then
-        # Run terminal 256 colors with reversed order, so that we won't see unclear text (eg.: deep blue over black)
-        $HOME/tools/256colors_j.pl -r
+        if [[ $- == *i* ]]; then
+            # We'll do this only in an interactive shell, so that this won't affect 'scp' execution to got error msg: "Received message too long 459093051"
+            # Run terminal 256 colors with reversed order, so that we won't see unclear text (eg.: deep blue over black)
+            $HOME/tools/256colors_j.pl -r
+        fi
         export LESSOPEN="|pygmentize -f terminal256 -g %s"
     else
         export LESSOPEN="|pygmentize -f terminal -g %s"

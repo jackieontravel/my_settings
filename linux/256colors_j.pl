@@ -244,11 +244,15 @@ for ( $gray = 0 ; $gray < 24 ; $gray++ ) {
 printf( "%s", $st ) if ($opt_q);
 
 
-if ( $opt_r ) {
-    printf "Set terminal256 color palette in reverse order.\n";
-}
-else {
-    printf "Set terminal256 color palette in normal order.\n";
+# NOTES on "-t STDOUT": This makes the output only appeared in an interactive shell
+# By doing this, the 'scp' won't be affected due to unexpected output.
+if (-t STDOUT) {
+    if ( $opt_r ) {
+        printf "Set terminal256 color palette in reverse order.\n";
+    }
+    else {
+        printf "Set terminal256 color palette in normal order.\n";
+    }
 }
 
 # display the colors
@@ -287,8 +291,9 @@ if ( $opt_p ) {
     for ( $color = 232 ; $color < 256 ; $color++ ) {
         &select_color($color);
     }
+    
+    printf "%s0m\n", $csi;
 }
-printf "%s0m\n", $csi;
 
 
 if ( $opt_n ) {
