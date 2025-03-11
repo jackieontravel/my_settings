@@ -81,7 +81,9 @@ alias mkctags='time ctags --extra=f --links=no --verbose -R . '
 #########################################################################
 #   gtags
 #########################################################################
-# mkgtags: defauot to skip unreadable and symlink
+# mkgtags: default to skip unreadable and symlink
+# $HOME/.globalrc will sip SVN, GIT and vscode
+# use 'mkgtags -i' to do incremental update
 function mkgtags()
 {
     if [ -f ./GTAGS.CONF ]; then
@@ -92,7 +94,8 @@ function mkgtags()
         echo "* ERROR: user-defined configuration file not found"
         echo "* NEXT:"
         echo "    wget https://raw.githubusercontent.com/namhyung/global/master/gtags.conf -O $HOME/.globalrc"
-        echo "    sed 's/:skip=/:skip=.svn\/,/g' -i $HOME/.globalrc"
+        echo "    sed 's/:skip=/:skip=.svn\/,.git\/,.vscode\/,.vscode-ctags,/g' -i $HOME/.globalrc"
+        echo "  Above operation will get the standard globalrc and exclude metadata of SVN, GIT, and vscode"
         return -1
     fi
     
@@ -101,6 +104,7 @@ function mkgtags()
     echo
     sleep 1
     time gtags --skip-unreadable --skip-symlink --verbose --gtagsconf $GCONF $*
+    echo -e "\nuse 'mkgtags -i' to do incremental update in the future."
 }
 
 # arguments ($1, $2, ...) are the dir's w/ or w/o trailing "/", will be skipped
