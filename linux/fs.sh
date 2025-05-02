@@ -1,7 +1,7 @@
 #!/bin/sh
 
-export FS_REL_VER="v4.1.0"
-export FS_REL_DATE="2025/2/24"
+export FS_REL_VER="v4.1.1"
+export FS_REL_DATE="2025/5/2"
 #############################################################################
 ### Revison History
 ###	2021/1/11   v3.6.1
@@ -40,6 +40,8 @@ export FS_REL_DATE="2025/2/24"
 ###	    [code] Code refactoring for 'User-specific variables' session by using advanced Python syntax
 ###	2025/2/24  v4.1.0
 ###	    [bugfix] Resolve 'sudo' issue so that 'ff' can work in j01
+###	2025/5/2    v4.1.1
+###	    [modify] Improve fs to exclude unneeded files under AmebaPro2
 ################################################################################
 
 
@@ -98,8 +100,9 @@ _fshelp()
     echo -e "**********"
     echo -e "shell function to find string in all subdirectory, exclude:"
     echo -e " -- binary files (*.o; *.so; *.map; )"
-    echo -e " -- all files version control: .svn, .git"
-    echo -e " -- tagging system files:ctags, ctags.tmp, GPATH, GRTAGS, GTAGS, tags, gtags.conf"
+    echo -e " -- all files version control: .svn, .git, .vscode"
+    echo -e " -- Build system generated folders: CMakeFiles"
+    echo -e " -- tagging system files:ctags, ctags.tmp, GPATH, GRTAGS, GTAGS, tags, gtags.conf, .vscode-ctags"
     echo -e " -- *.d"
     echo -e " "
     echo -e "Usage:"
