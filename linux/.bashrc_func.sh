@@ -144,6 +144,14 @@ function mkgtags_bsp4()
     mkgtags_skipdirs build_dir $*
 }
 
+
+# mkgtags_bsp4 -i ... Update GTAGS for bsp4
+function mkgtags_inc()
+{
+    mkgtags -i $*
+}
+
+
 # Don't use updgtags as it will 
 # alias updgtags='time global -u' # To update gtags
 
