@@ -16,7 +16,7 @@ PATH_TYPE = os.environ.get('FS_PATH_TYPE', "WINDOWS")
 disk_home_src = os.environ.get('DISK_HOME', os.environ.get('HOME'))
 
 FS_EXCLUDE_DIRS="-name .svn -o -name AppLibs -o -path ./BSEAV/bin -o -path ./out -o -name .git -o -name .repo -o -name objs -o -name .vscode -o -name CMakeFiles"
-EXCLUDE_FILES="--exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --exclude='ctags.tmp' --exclude='GPATH' --exclude='GRTAGS' --exclude='GTAGS' --exclude='gtags.conf' --exclude='tags' --exclude='.vscode-ctags'"
+EXCLUDE_FILES="--exclude='*.d' --exclude='*.o' --exclude='*.so' --exclude='*.map' --exclude='ctags.tmp' --exclude='GPATH' --exclude='GRTAGS' --exclude='GTAGS' --exclude='gtags.conf' --exclude='tags' --exclude='.vscode-ctags' --exclude='TRACE_FILE'"
 
 # We don't skip too many dirs for ff, hopefully we can still find *.o
 FF_EXCLUDE_DIRS="-name .svn -o -name .git -o -name .repo"
