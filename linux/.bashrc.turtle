@@ -59,6 +59,8 @@ add_path_to_end /usr/local/sbin
 add_path_to_end $HOME/tools
 ## For Sheldon battery analyzer
 add_path_to_end $HOME/nfs/sheldon/battery/battery_analyze
+# Codex installer: 2026/11/25
+add_path_to_end $HOME/.local/bin
 
 ########################################################################
 ### Supporting scripts
